@@ -193,3 +193,35 @@ hs_err_pid*
 ### Scala ###
 
 # End of https://www.gitignore.io/api/java,code,scala,eclipse,intellij+all
+
+
+# Created by https://www.gitignore.io/api/sbt,maven
+# Edit at https://www.gitignore.io/?templates=sbt,maven
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### SBT ###
+# Simple Build Tool
+# http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
+
+dist/*
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+.history
+.cache
+.lib/
+
+# End of https://www.gitignore.io/api/sbt,maven
+
