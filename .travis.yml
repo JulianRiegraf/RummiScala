@@ -1,6 +1,6 @@
 language: scala
 scala:
-  - 2.12.18
+  - 2.12.2
 notifications:
   email:
     recipients:
@@ -8,3 +8,5 @@ notifications:
       - pa.toth87@gmail.com
 jdk:
   - openjdk8
+script:
+      - sbt test
