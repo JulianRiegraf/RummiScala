@@ -9,4 +9,6 @@ notifications:
 jdk:
   - openjdk8
 script:
-      - sbt test
+  - sbt test
+after_success:
+  - sbt coveralls
