@@ -8,7 +8,5 @@ notifications:
       - pa.toth87@gmail.com
 jdk:
   - openjdk8
-script:
-  - sbt test
-after_success:
-  - sbt coveralls
+script: "sbt clean coverage test"
+after_success: "sbt coverageReport coveralls"
