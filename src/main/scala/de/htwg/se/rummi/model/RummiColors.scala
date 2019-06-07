@@ -10,6 +10,10 @@ object RummiColors {
       print(ansiCode + text + ANSI_RESET)
     }
 
+    def stringInColor(text: String): String = {
+      ansiCode + text + ANSI_RESET
+    }
+
     override def toString = name
 
   }
