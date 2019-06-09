@@ -1,7 +1,6 @@
-import de.htwg.se.rummi.aview.{SwingGui, Tui}
+import de.htwg.se.rummi.aview.Tui
+import de.htwg.se.rummi.aview.swing.SwingGui
 import de.htwg.se.rummi.controller.Controller
-import de.htwg.se.rummi.model.{Player, Playingfield}
-import de.htwg.se.rummi.model.RummiColors._
 
 import scala.io.StdIn
 
@@ -35,6 +34,8 @@ object Rummi {
 
     tui = new Tui(controller)
     gui = new SwingGui(controller)
+    gui.init
+    gui.visible = true
 
 
     var input: String = ""
