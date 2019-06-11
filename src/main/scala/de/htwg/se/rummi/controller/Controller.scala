@@ -9,7 +9,6 @@ import scala.swing.event.Event
 
 class Controller(playerNames: List[String]) extends Publisher {
 
-
   val number_of_number_tiles = 104
   val number_of_joker_tiles = 2
   val lowest_number = 1
@@ -17,30 +16,40 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   val MINIMUM_POINTS_FIRST_ROUND = 30
   var statusMessage: String = ""
+  var hasDrawn = false
 
   val playingfield = new Playingfield()
   val players = playerNames.map(x => new Player(x))
-  var activePlayerIndex = 0
+  private var activePlayerIndex: Int = 0
 
   def initGame() = {
     playingfield.generate(players)
-    publish(new PlayerSwitchedEvent())
   }
 
   def getActivePlayer: Player = {
     players(activePlayerIndex)
   }
 
+  // finish
   def switchPlayer(): Unit = {
 
-    // TODO Check valid state
+    if (isValid() == false) {
+      return
+    }
 
-    activePlayerIndex += 1
+    activePlayerIndex = activePlayerIndex + 1
+    println("activepolayer: " + activePlayerIndex)
     if (activePlayerIndex >= players.size) {
       activePlayerIndex = 0
     }
 
+    println("Active Player: " + getActivePlayer.name)
+    hasDrawn = false
+
     // check if playingfield is valid
+
+    tilesMovedFromRacktoGrid = Nil
+    publish(new PlayerSwitchedEvent)
   }
 
   def getPlayingField: List[RummiSet] = {
@@ -50,7 +59,10 @@ class Controller(playerNames: List[String]) extends Publisher {
   def getRack(player: Player): List[Tile] = {
     playingfield.racks.find(x => x._1 == player) match {
       case Some(t) => t._2
-      case None => throw new NoSuchElementException
+      case None => {
+        println("No Rack of " + player.name)
+        throw new NoSuchElementException
+      }
     }
   }
 
@@ -62,7 +74,9 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     // CHeck if playingfield is valid
     for (s <- playingfield.sets) {
-      if (s.isValid() == false) {
+      if (s.isValidRun() == false && s.isValidGroup() == false) {
+        statusMessage = "Dein Spielfeld hat fehler, du Pisser!"
+        publish(new StatusMessageChangedEvent)
         return false
       }
     }
@@ -74,7 +88,20 @@ class Controller(playerNames: List[String]) extends Publisher {
     statusMessage
   }
 
-  def getTile(): Unit = {
+  def draw(): Unit = {
+
+    if (hasDrawn) {
+      statusMessage = "Du darfst nur einmal ziehen, du Papnase."
+      publish(new StatusMessageChangedEvent)
+      return
+    }
+
+    if (tilesMovedFromRacktoGrid.size != 0) {
+      statusMessage = "Du host scho glegt, du Zipfelklatscher."
+      publish(new StatusMessageChangedEvent)
+      return
+    }
+
     val newTile = playingfield.coveredTiles(0)
     playingfield.coveredTiles = playingfield.coveredTiles.filter(x => x != newTile)
 
@@ -83,21 +110,55 @@ class Controller(playerNames: List[String]) extends Publisher {
       case None => throw new NoSuchElementException
     }
 
-    playingfield.racks = playingfield.racks.filter(x => x._1 == getActivePlayer)
+    playingfield.racks = playingfield.racks.filter(x => x._1 != getActivePlayer)
 
     playingfield.racks = (r._1, newTile :: r._2) :: playingfield.racks
+
+    hasDrawn = true
     publish(new RackChangedEvent)
   }
+
+  var tilesMovedFromRacktoGrid: List[Tile] = Nil
 
   def moveTile(tile: Tile, setOption: Option[RummiSet]): Unit = {
 
     // The player moves a tile from the rack or from a set on the playing field to another set
     // set is None, if the tile builds a new set
 
-    setOption match {
-      case Some(set) => set + tile // TODO: Implement
-      case None => new Run(tile :: Nil)
+    playingfield.racks.find(x => x._1 == getActivePlayer) match {
+      case Some(rack) => {
+        if (rack._2.contains(tile)) {
+          println("Tile " + tile + " in rack")
+          // Tile is in the rack of current player
+          playingfield.racks = playingfield.racks.filter(x => x._1 == getActivePlayer)
+          playingfield.racks = (rack._1, rack._2.filter(x => x != tile)) :: playingfield.racks
+          tilesMovedFromRacktoGrid = tile :: tilesMovedFromRacktoGrid
+          publish(new RackChangedEvent)
+        } else {
+          println("Tile " + tile + " in grid")
+
+          // Hole Set, welches tile enthält
+          val set: RummiSet = playingfield.sets.find(x => x.tiles.contains(tile)).get
+          set.tiles = set.tiles.filter(t => t != tile)
+          if (set.tiles.size == 0) {
+            playingfield.sets = playingfield.sets.filter(x => x != set)
+          }
+        }
+
+
+      }
+      case None => {
+        println("None")
+      }
     }
+
+    setOption match {
+      case Some(set) => set + tile
+      case None => {
+        playingfield.sets = new RummiSet(tile :: Nil) :: playingfield.sets
+      }
+    }
+
 
     // A set, which was a run can be changed to a group!
 
@@ -105,7 +166,34 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     // Check if the player has won
 
+    publish(new FieldChangedEvent)
   }
+
+  def moveTileToRack(tile: Tile): Unit = {
+    println("Move " + tile + " to rack.")
+
+    if (!tilesMovedFromRacktoGrid.contains(tile)) {
+      statusMessage = "Des darfsch du ned!"
+      publish(new StatusMessageChangedEvent)
+      return
+    }
+
+    val set: RummiSet = playingfield.sets.find(x => x.tiles.contains(tile)).get
+    set.tiles = set.tiles.filter(t => t != tile)
+    if (set.tiles.size == 0) {
+      playingfield.sets = playingfield.sets.filter(x => x != set)
+    }
+    val rack = playingfield.racks.find(x => x._1 == getActivePlayer).get
+    playingfield.racks = playingfield.racks.filter(x => x._1 == getActivePlayer)
+    playingfield.racks = (rack._1, tile :: rack._2) :: playingfield.racks
+
+    tilesMovedFromRacktoGrid = tilesMovedFromRacktoGrid.filter(x => x != tile)
+
+    publish(new RackChangedEvent)
+    publish(new FieldChangedEvent)
+  }
+
+
 }
 
 case class PlayerSwitchedEvent() extends Event

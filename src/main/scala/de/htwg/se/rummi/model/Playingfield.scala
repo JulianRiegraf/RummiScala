@@ -35,8 +35,6 @@ case class Playingfield() {
 
     coveredTiles = scala.util.Random.shuffle(coveredTiles)
 
-    racks == (new Player("J"), Nil) :: racks
-
     for (p <- players) {
       // Take 14 tiles and add them to the rack of the player
       val tilesAddToRack = coveredTiles.take(NUMBER_OF_INITIAL_RACK_TILES)
