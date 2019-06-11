@@ -14,5 +14,5 @@ lazy val root = (project in file("."))
 
 
 libraryDependencies += "org.scala-lang.modules" % "scala-swing_2.12" % "2.0.3"
-
+libraryDependencies += "org.scalafx" %% "scalafx" % "8.0.144-R12"
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
