@@ -1,39 +1,32 @@
 package de.htwg.se.rummi.model
 
-trait RummiSet {
-  def isValid(): Boolean
+class RummiSet(var tiles: List[Tile]) {
 
-  def +(tile: Tile): RummiSet
+  def +(tile: Tile): Unit = {
+    tiles = tile :: tiles
+  }
 
-  def -(tile: Tile): RummiSet
-}
+  def -(tile: Tile): Unit = {
+    tiles = tile :: tiles
+  }
 
-case class Run(tiles: List[Tile]) extends RummiSet {
-
-  override def isValid(): Boolean = {
-    if(tiles.size < 3) return false
+  def isValidRun(): Boolean = {
+    if (tiles.size < 3) return false
     if (tiles.groupBy(_.color).size > 1) return false
-    // TODO: Check if tiles are ascending
+
+    for (i <- 0 to tiles.size - 2) {
+      val n: List[Tile] = tiles.sortBy(_.number)
+      if (n(i).number + 1 != n(i + 1).number)
+        return false
+    }
     true
   }
 
-  override def +(tile: Tile): RummiSet = new Run((tiles :+ tile).sortBy(x => x.number))
-
-  override def -(tile: Tile): RummiSet = new Run(tiles.filter(_ != tile).sortBy(x => x.number))
-
-}
-
-case class Group(tiles: List[Tile]) extends RummiSet {
-
-  override def isValid(): Boolean = {
-    if(tiles.size < 3) return false
+  def isValidGroup(): Boolean = {
+    if (tiles.size < 3) return false
     if (tiles.groupBy(_.number).size > 1) return false
     if (tiles.groupBy(_.color).size != tiles.size) return false
     true
   }
-  override def +(tile: Tile): RummiSet = new Group(tiles :+ tile)
 
-  override def -(tile: Tile): RummiSet = new Group(tiles.filter(_ != tile))
 }
-
-

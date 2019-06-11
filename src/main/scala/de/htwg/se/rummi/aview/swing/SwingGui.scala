@@ -2,8 +2,8 @@ package de.htwg.se.rummi.aview.swing
 
 import java.awt.Color
 
-import de.htwg.se.rummi.controller.Controller
-import de.htwg.se.rummi.model.{Run, Tile}
+import de.htwg.se.rummi.controller._
+import de.htwg.se.rummi.model.Tile
 
 import scala.swing._
 import scala.swing.event.ButtonClicked
@@ -14,6 +14,8 @@ import scala.swing.event.ButtonClicked
   * @param controller
   */
 class SwingGui(controller: Controller) extends MainFrame {
+
+  listenTo(controller)
 
   preferredSize = new Dimension(1100, 800)
   title = "Rummikub in Scala"
@@ -27,6 +29,14 @@ class SwingGui(controller: Controller) extends MainFrame {
   val GRID_ROWS: Int = 8
   val GRID_COLS: Int = 13
 
+  val finishButton = new Button("Finish")
+  listenTo(finishButton)
+  val getTileButton = new Button("Get Tile")
+  listenTo(getTileButton)
+  val checkButton = new Button("Check")
+  listenTo(checkButton)
+
+  val statusLabel = new Label("Label")
 
   val grid = new GridPanel(8, 13) {
 
@@ -67,21 +77,18 @@ class SwingGui(controller: Controller) extends MainFrame {
 
   val center = new BoxPanel(Orientation.Vertical) {
 
-    val sep = new BoxPanel(Orientation.Horizontal)
-    sep.
-
     contents += grid
     contents += rack
     contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Button("Finish")
-      contents += new Button("Check")
-      contents += new Button("Get Tile")
+      contents += finishButton
+      contents += checkButton
+      contents += getTileButton
     }
   }
 
   contents = new BorderPanel() {
     add(center, BorderPanel.Position.Center)
-    add(new Label("Label"), BorderPanel.Position.South)
+    add(statusLabel, BorderPanel.Position.South)
   }
 
   fieldsInRack.foreach(t => listenTo(t))
@@ -93,53 +100,87 @@ class SwingGui(controller: Controller) extends MainFrame {
   reactions += {
     case ButtonClicked(b) => {
 
-      val clickedField: Field = b.asInstanceOf[Field]
+      if (b.isInstanceOf[Field]) {
+        val clickedField: Field = b.asInstanceOf[Field]
+        fieldClicked(clickedField)
+      } else if (b == getTileButton) {
+        controller.draw()
+      } else if (b == finishButton) {
+        controller.switchPlayer()
+      }
+    }
+    case event: RackChangedEvent => {
+      println("RackChangedEvent")
+      loadRack()
+    }
 
+    case event: FieldChangedEvent => {
+      println("FieldChangedEvent")
+      loadGrid()
+    }
 
-      // Click on a empty field and there is no field selected -> Do nothing
-      if (clickedField.tileOpt.isEmpty && selectedField.isEmpty) {
+    case event: ValidStateChangedEvent => {
+      println("ValidStateChangedEvent")
+      if (controller.isValid()) {
+        finishButton.enabled = true
+      } else {
+        finishButton.enabled = false
+      }
+    }
 
-      }
-      // Click on a empty field an there is a field selected -> move selected to empty field, unselect
-      else if (clickedField.tileOpt.isEmpty && selectedField.isDefined) {
-        moveTile(clickedField, selectedField.get, selectedField.get.tileOpt.get)
-        selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
-        selectedField = None
-      }
-      // Click on a filled field an no field selected -> Select field
-      else if (clickedField.tileOpt.isDefined && selectedField.isEmpty) {
-        selectedField = Some(clickedField)
-        clickedField.border = Swing.LineBorder(Color.BLACK, 4)
-      }
-      // Click on a filled field an there is a field selected --> Unselect if same selected and clicket is same, else Do nothing
-      else if (clickedField.tileOpt.isDefined && selectedField.isDefined) {
-        if (clickedField == selectedField.get) {
-          selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
-          selectedField = None
-        }
-      }
+    case event: PlayerSwitchedEvent => {
+      println("PlayerSwitchedEvent")
+      loadRack()
+    }
+
+    case event: WinEvent => {
+      grid.enabled = false
+    }
+
+    case event: StatusMessageChangedEvent => {
+      statusLabel.text = controller.statusMessage
     }
   }
 
 
+  private def fieldClicked(clickedField: Field) = {
+    // Click on a empty field and there is no field selected -> Do nothing
+    if (clickedField.tileOpt.isEmpty && selectedField.isEmpty) {
+
+    }
+    // Click on a empty field an there is a field selected -> move selected to empty field, unselect
+    else if (clickedField.tileOpt.isEmpty && selectedField.isDefined) {
+      moveTile(clickedField, selectedField.get, selectedField.get.tileOpt.get)
+      selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
+      selectedField = None
+    }
+    // Click on a filled field an no field selected -> Select field
+    else if (clickedField.tileOpt.isDefined && selectedField.isEmpty) {
+      selectedField = Some(clickedField)
+      clickedField.border = Swing.LineBorder(Color.BLACK, 4)
+    }
+    // Click on a filled field an there is a field selected --> Unselect if same selected and clicket is same, else Do nothing
+    else if (clickedField.tileOpt.isDefined && selectedField.isDefined) {
+      if (clickedField == selectedField.get) {
+        selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
+        selectedField = None
+      }
+    }
+  }
+
   def init = {
+    loadRack()
+    loadGrid
+  }
+
+  def loadRack(): Unit = {
+
+    fieldsInRack.foreach(x => x.unsetTile())
+
     val player = controller.getActivePlayer
-    val field = controller.getPlayingField
     val rack = controller.getRack(player)
 
-    field.foreach(rummiSet => {
-      var row = 1
-      var col = 1
-      if (rummiSet.isInstanceOf[Run]) {
-        val run = rummiSet.asInstanceOf[Run]
-        run.tiles.sortBy(t => t.number).foreach(t => {
-          val field = getFieldInGrid(row, col).get
-          field.setTile(t)
-          col += 1
-        })
-      }
-    })
-
+    println("load rack of " + player.name)
     var row = 1
     var col = 1
     rack.foreach(tile => {
@@ -153,6 +194,27 @@ class SwingGui(controller: Controller) extends MainFrame {
     })
   }
 
+  def loadGrid(): Unit = {
+
+    fieldsInGrid.foreach(x => x.unsetTile())
+
+    val player = controller.getActivePlayer
+    val field = controller.getPlayingField
+
+    var row = 1
+    var col = 1
+
+    for (s <- field) {
+      s.tiles = s.tiles.sortBy(_.number)
+      for (t <- s.tiles) {
+        getFieldInGrid(row, col).get.setTile(t)
+        col += 1
+      }
+      row += 1
+      col = 1
+    }
+  }
+
   /** *
     * Moves a tile from a field to another field.
     *
@@ -160,9 +222,22 @@ class SwingGui(controller: Controller) extends MainFrame {
     * @param selectedTile
     */
   private def moveTile(fieldTo: Field, fieldFrom: Field, selectedTile: Tile): Unit = {
-    fieldTo.setTile(selectedTile)
-    fieldFrom.unsetTile()
-    // controller.moveTile(selectedTile, Some(new Run(Nil)))
+
+    if (fieldsInRack.contains(fieldTo)) {
+      controller.moveTileToRack(selectedTile)
+      return
+    }
+
+    val p = controller.getPlayingField
+    println("p.size: " + p.size)
+    println("fieldTo.x - 1 : " + (fieldTo.x - 1))
+    if (p.size > 0 && p.size > fieldTo.x - 1) {
+      controller.moveTile(selectedTile, Some(p(fieldTo.x - 1)))
+    } else {
+      controller.moveTile(selectedTile, None)
+    }
+    //fieldTo.setTile(selectedTile)
+    //fieldFrom.unsetTile()
   }
 
   def isGridField(field: Field): Boolean = {
