@@ -34,14 +34,6 @@ class RummiSet(var tiles: List[Tile]) {
 
     buffer.foreach(x => print(x + " "))
 
-    if (buffer.min < buffer(pivotIndex) - pivotIndex){
-      println("Invalid, to low")
-    }
-
-    if (buffer.max < buffer(pivotIndex) + (l.size - pivotIndex-1)){
-      println("Invalid, to high")
-    }
-
     buffer.sum
   }
 
