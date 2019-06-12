@@ -3,7 +3,7 @@ package de.htwg.se.rummi.aview.swing
 import java.awt.Color
 
 import de.htwg.se.rummi.controller._
-import de.htwg.se.rummi.model.Tile
+import de.htwg.se.rummi.model.{RummiColors, Tile}
 
 import scala.swing._
 import scala.swing.event.ButtonClicked
@@ -36,7 +36,8 @@ class SwingGui(controller: Controller) extends MainFrame {
   val checkButton = new Button("Check")
   listenTo(checkButton)
 
-  val statusLabel = new Label("Label")
+  val statusLabel = new Label(controller.statusMessage)
+  val playerLabel = new Label("Player: " + controller.getActivePlayer.name)
 
   val grid = new GridPanel(8, 13) {
 
@@ -86,9 +87,24 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
+  val south = new GridPanel(1, 3) {
+    contents += playerLabel
+    contents += statusLabel
+    contents += new FlowPanel {
+      contents += new Label("Sort by")
+      contents += Button("Color") {
+        loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
+      }
+      contents += Button("Number"){
+        loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.number, x.color)))
+      }
+    }
+  }
+
+
   contents = new BorderPanel() {
     add(center, BorderPanel.Position.Center)
-    add(statusLabel, BorderPanel.Position.South)
+    add(south, BorderPanel.Position.South)
   }
 
   fieldsInRack.foreach(t => listenTo(t))
@@ -129,7 +145,8 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
 
     case event: PlayerSwitchedEvent => {
-      println("PlayerSwitchedEvent")
+      println("--- PlayerSwitchedEvent ---")
+
       loadRack()
     }
 
@@ -173,14 +190,10 @@ class SwingGui(controller: Controller) extends MainFrame {
     loadGrid
   }
 
-  def loadRack(): Unit = {
+  def loadRack(rack: List[Tile] = controller.getRack(controller.getActivePlayer)): Unit = {
 
     fieldsInRack.foreach(x => x.unsetTile())
 
-    val player = controller.getActivePlayer
-    val rack = controller.getRack(player)
-
-    println("load rack of " + player.name)
     var row = 1
     var col = 1
     rack.foreach(tile => {

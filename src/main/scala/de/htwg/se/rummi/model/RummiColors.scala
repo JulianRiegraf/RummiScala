@@ -1,10 +1,12 @@
 package de.htwg.se.rummi.model
 
-object RummiColors {
+
+object RummiColors{
 
   val ANSI_RESET = "\u001B[0m"
 
-  sealed abstract class Color(name: String, ansiCode: String) {
+  sealed abstract class Color(val name: String, val ansiCode: String) extends Ordered[Color]{
+
 
     def printInColor(text: String): Unit = {
       print(ansiCode + text + ANSI_RESET)
@@ -15,6 +17,10 @@ object RummiColors {
     }
 
     override def toString = name
+
+    override def compare(that: Color): Int = {
+      this.name.compareTo(that.name)
+    }
 
   }
 
