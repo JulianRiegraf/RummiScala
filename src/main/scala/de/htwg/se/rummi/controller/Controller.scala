@@ -17,6 +17,8 @@ class Controller(playerNames: List[String]) extends Publisher {
   val MINIMUM_POINTS_FIRST_ROUND = 30
   var statusMessage: String = ""
   var hasDrawn = false
+  var currenSets: List[RummiSet] = Nil
+
 
   var tilesMovedFromRacktoGrid: List[Tile] = Nil
 
@@ -49,6 +51,8 @@ class Controller(playerNames: List[String]) extends Publisher {
     //println("Active Player: " + getActivePlayer.name)
     hasDrawn = false
 
+    currenSets = playingfield.sets
+
     // check if playingfield is valid
     statusMessage = ""
     publish(new StatusMessageChangedEvent)
@@ -73,7 +77,8 @@ class Controller(playerNames: List[String]) extends Publisher {
   def checkFirstMove(): Boolean = {
     var activePlayer = getActivePlayer
     if(firstMoveList.contains(activePlayer)){
-      val sumOfFirstMove = tilesMovedFromRacktoGrid.map(x => x.number).sum
+      val sumOfFirstMove = playingfield.sets.filter(x => !currenSets.contains(x)).map(x => x.getPoints()).sum
+//      val sumOfFirstMove = tilesMovedFromRacktoGrid.map(x => x.number).sum
       println("sumoffirstmove: "+ sumOfFirstMove)
       if(sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND){
         return false

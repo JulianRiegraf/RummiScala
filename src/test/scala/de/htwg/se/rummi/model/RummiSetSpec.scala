@@ -66,13 +66,13 @@ class RummiSetSpec extends WordSpec with Matchers {
         run.isValidRun() should be(true)
       }
 
-     /* "be invalid with a jocker at the end" in {
+      "be invalid with a jocker at the end" in {
         val joker: Tile = new Tile(-1, GREEN, true)
         val list = g11 :: g12 :: g13 :: joker :: Nil
 
         val run = new RummiSet(list)
         run.isValidRun() should be(false)
-      }*/
+      }
 
       "be valid with a jocker at the beginning" in {
         val joker: Tile = new Tile(-1, GREEN, true)
@@ -82,13 +82,13 @@ class RummiSetSpec extends WordSpec with Matchers {
         run.isValidRun() should be(true)
       }
 
-    /*  "be invalid with a jocker at the beginning" in {
+      "be invalid with a jocker at the beginning" in {
         val joker: Tile = new Tile(-1, GREEN, true)
         val list = joker :: g1 :: g2 :: g3 :: Nil
 
         val run = new RummiSet(list)
         run.isValidRun() should be(false)
-      }*/
+      }
 
       "be return the correct number of points" in {
         var list = g1 :: g2 :: g3 :: Nil
