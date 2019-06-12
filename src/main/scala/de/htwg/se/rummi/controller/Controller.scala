@@ -12,14 +12,17 @@ class Controller(playerNames: List[String]) extends Publisher {
   val number_of_number_tiles = 104
   val number_of_joker_tiles = 2
   val lowest_number = 1
-  val highest_number = 13;
+  val highest_number = 13
 
   val MINIMUM_POINTS_FIRST_ROUND = 30
   var statusMessage: String = ""
   var hasDrawn = false
 
+  var tilesMovedFromRacktoGrid: List[Tile] = Nil
+
   val playingfield = new Playingfield()
   val players = playerNames.map(x => new Player(x))
+  var firstMoveList = players
   private var activePlayerIndex: Int = 0
 
   def initGame() = {
@@ -38,16 +41,17 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
 
     activePlayerIndex = activePlayerIndex + 1
-    println("activepolayer: " + activePlayerIndex)
+    //println("activepolayer: " + activePlayerIndex)
     if (activePlayerIndex >= players.size) {
       activePlayerIndex = 0
     }
 
-    println("Active Player: " + getActivePlayer.name)
+    //println("Active Player: " + getActivePlayer.name)
     hasDrawn = false
 
     // check if playingfield is valid
-
+    statusMessage = ""
+    publish(new StatusMessageChangedEvent)
     tilesMovedFromRacktoGrid = Nil
     publish(new PlayerSwitchedEvent)
   }
@@ -66,11 +70,22 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
   }
 
+  def checkFirstMove(): Boolean = {
+    var activePlayer = getActivePlayer
+    if(firstMoveList.contains(activePlayer)){
+      val sumOfFirstMove = tilesMovedFromRacktoGrid.map(x => x.number).sum
+      println("sumoffirstmove: "+ sumOfFirstMove)
+      if(sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND){
+        return false
+      } else {
+        firstMoveList = firstMoveList.filter(x => x != activePlayer)
+        return true
+      }
+    }
+    true
+  }
+
   def isValid(): Boolean = {
-
-    // TODO: Check if minimum points in first turn are reached
-
-    // TODO: If player draw a tile and does not make changes to the playingfield => also valid
 
     // CHeck if playingfield is valid
     for (s <- playingfield.sets) {
@@ -78,6 +93,29 @@ class Controller(playerNames: List[String]) extends Publisher {
         statusMessage = "Dein Spielfeld hat fehler, du Pisser!"
         publish(new StatusMessageChangedEvent)
         return false
+      }
+    }
+
+    // TODO: Joker Logic
+    // draws and not played -> valid
+    if(tilesMovedFromRacktoGrid.size == 0 && hasDrawn){
+      return true
+    } else {
+      // first move -> 30points or more
+      val checker = checkFirstMove()
+      println("checker: " + checker)
+      if (checker == false){
+        statusMessage = "Du musst in deinem ersten Zug 30 oder mehr Punkte legen."
+        publish(new StatusMessageChangedEvent)
+        return false
+      } else {
+        if(tilesMovedFromRacktoGrid.size > 0){
+          return true
+        } else {
+          statusMessage = "Du musst ziehen oder Steine legen..."
+          publish(new StatusMessageChangedEvent)
+          return false
+        }
       }
     }
     true
@@ -117,8 +155,6 @@ class Controller(playerNames: List[String]) extends Publisher {
     hasDrawn = true
     publish(new RackChangedEvent)
   }
-
-  var tilesMovedFromRacktoGrid: List[Tile] = Nil
 
   def moveTile(tile: Tile, setOption: Option[RummiSet]): Unit = {
 
@@ -166,6 +202,8 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     // Check if the player has won
 
+    statusMessage = ""
+    publish(new StatusMessageChangedEvent)
     publish(new FieldChangedEvent)
   }
 
