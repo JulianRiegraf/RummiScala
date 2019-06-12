@@ -13,11 +13,35 @@ class RummiSet(var tiles: List[Tile]) {
 
   def getPoints(): Int = {
     var points = 0
-    tiles.find(x => x.joker == false) match {
-      case
-        Some(t) => {
-        val index = tiles.indexOf(t)
-        val n = t
+    if (isValidGroup()) {
+      points = tiles.size * tiles.find(x => !x.joker).get.number
+    } else if (isValidRun()) {
+      tiles.find(x => x.joker == true) match {
+        case
+          Some(t) => {
+          val index = tiles.indexOf(t)
+          var jokerpoints = 0
+          //joker am anfang
+          if (index == 0) {
+            jokerpoints = tiles(1).number - 1
+            for (i <- (index + 1) to tiles.size - 1) {
+              points += tiles(i).number
+            }
+            points += jokerpoints
+          }
+        }
+        case
+          None => {
+          for (i <- 0 to tiles.size - 1) {
+            points += tiles(i).number
+
+          }
+        }
+
+
+
+
+        /*val n = t
         for (i <- (index + 1) to (tiles.size - 1)) {
           if (tiles(index).number != n.number + i) {
             if (tiles(index).joker) {
@@ -35,9 +59,10 @@ class RummiSet(var tiles: List[Tile]) {
           } else {
             points += tiles(index).number
           }
-        }
+        }*/
       }
     }
+
     return points
   }
 
