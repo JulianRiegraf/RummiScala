@@ -12,20 +12,19 @@ class RummiSet(var tiles: List[Tile]) {
 
 
   def getPoints(): Int = {
-    val l = tiles
-    val pivotTile = l.find(t => t.joker == false) match {
+    val pivotTile = tiles.find(t => !t.joker) match {
       case Some(t) => t
       case None => new NoSuchElementException
     }
 
-    val pivotIndex = l.indexOf(pivotTile)
+    val pivotIndex = tiles.indexOf(pivotTile)
 
-    val buffer = l.map(t => {
+    val buffer = tiles.map(t => {
       if (t.joker) -1
       else t.number
     }).toBuffer
 
-    for (i <- 0 to l.size - 1) {
+    for (i <- 0 to tiles.size - 1) {
       if (buffer(i) == -1) {
         buffer.update(i, buffer(pivotIndex) - (pivotIndex - i))
       }
