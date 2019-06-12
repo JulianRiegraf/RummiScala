@@ -20,7 +20,6 @@ class RummiSet(var tiles: List[Tile]) {
 
     val pivotIndex = l.indexOf(pivotTile)
 
-
     val buffer = l.map(t => {
       if (t.joker) -1
       else t.number
@@ -31,8 +30,6 @@ class RummiSet(var tiles: List[Tile]) {
         buffer.update(i, buffer(pivotIndex) - (pivotIndex - i))
       }
     }
-
-    buffer.foreach(x => print(x + " "))
 
     buffer.sum
   }
