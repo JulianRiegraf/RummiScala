@@ -17,12 +17,12 @@ class RummiSetSpec extends WordSpec with Matchers {
 
     "return true" in {
       val group1 = new RummiSet(greenTile1 :: blueTile1 :: yellowTile1 :: Nil)
-      group1.isValidGroup() should be true
+      group1.isValidGroup() should be(true)
     }
 
     "give the correct amount of points" in {
       val group1 = new RummiSet(greenTile1 :: blueTile1 :: yellowTile1 :: Nil)
-      group1.getPoints() should be 3
+      group1.getPoints() should be(3)
     }
   }
 
@@ -38,10 +38,10 @@ class RummiSetSpec extends WordSpec with Matchers {
 
 
         val run1 = new RummiSet(g1 :: g2 :: g3 :: Nil)
-        run1.isValidRun() should be true
+        run1.isValidRun() should be(true)
 
         val run2 = new RummiSet(g1 :: g2 :: b3 :: Nil)
-        run2.isValidRun() should be false
+        run2.isValidRun() should be(false)
       }
 
       "be valid with shuffeld tiles" in {
@@ -50,31 +50,31 @@ class RummiSetSpec extends WordSpec with Matchers {
         list = Random.shuffle(list)
 
         val run1 = new RummiSet(list)
-        run1.isValidRun() should be true
+        run1.isValidRun() should be(true)
 
       }
 
       "be valid with a jocker at the end" in {
         val joker: Tile = new Tile(-1, GREEN, true)
-        val list =  g1 :: g2 :: g3 :: joker :: Nil
+        val list = g1 :: g2 :: g3 :: joker :: Nil
 
         val run = new RummiSet(list)
-        run.isValidRun() should be true
+        run.isValidRun() should be(true)
       }
 
       "be valid with a jocker at the beginning" in {
         val joker: Tile = new Tile(-1, GREEN, true)
-        val list =  joker :: g1 :: g2 :: g3 :: Nil
+        val list = joker :: g1 :: g2 :: g3 :: Nil
 
         val run = new RummiSet(list)
-        run.isValidRun() should be true
+        run.isValidRun() should be(true)
       }
 
       "be return the correct number of points" in {
         var list = g1 :: g2 :: g3 :: Nil
 
         val run1 = new RummiSet(list)
-        run1.getPoints() should be 6
+        run1.getPoints() should be(6)
       }
     }
   }
