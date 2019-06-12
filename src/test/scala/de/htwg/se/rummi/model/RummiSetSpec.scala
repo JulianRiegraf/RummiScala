@@ -31,6 +31,7 @@ class RummiSetSpec extends WordSpec with Matchers {
     val g1 = new Tile(1, GREEN)
     val g2 = new Tile(2, GREEN)
     val g3 = new Tile(3, GREEN)
+    val g4 = new Tile(4, GREEN)
     val b3 = new Tile(3, BLUE)
     val g11 = new Tile(11, GREEN)
     val g12 = new Tile(12, GREEN)
@@ -111,6 +112,15 @@ class RummiSetSpec extends WordSpec with Matchers {
 
         val run1 = new RummiSet(list)
         run1.getPoints() should be(6)
+      }
+
+      "be return the correct number of points with two jokers in the middle" in {
+        val joker: Tile = new Tile(-1, GREEN, true)
+        val joker2: Tile = new Tile(-1, GREEN, true)
+        var list = g1 :: joker :: joker2 :: g4 :: Nil
+
+        val run1 = new RummiSet(list)
+        run1.getPoints() should be(10)
       }
 
       "be return the correct number of points with a joker at the end" in {

@@ -24,13 +24,13 @@ class RummiSet(var tiles: List[Tile]) {
           var secondJokerPoints = 0
           //joker am anfang
           if (index == 0) {
-            // jokerPoints = tiles(1).number - 1
+            //check if there is a second joker in the list
             for (i <- (index + 1) to tiles.size - 1) {
               if (tiles(i).joker) {
                 if (i == 1) {
                   //2. joker an stelle 2:
-                  jokerPoints = tiles(index + 2).number - 2
-                  secondJokerPoints = tiles(i + 1).number -1
+                  jokerPoints = tiles(index + 2).number - 1
+                  secondJokerPoints = tiles(i + 1).number - 1
                 } else {
                   secondJokerPoints = tiles(i - 1).number + 1
                 }
