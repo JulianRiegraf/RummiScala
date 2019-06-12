@@ -12,58 +12,37 @@ class RummiSet(var tiles: List[Tile]) {
 
 
   def getPoints(): Int = {
-    var points = 0
-    if (isValidGroup()) {
-      points = tiles.size * tiles.find(x => !x.joker).get.number
-    } else if (isValidRun()) {
-      tiles.find(x => x.joker == true) match {
-        case
-          Some(t) => {
-          val index = tiles.indexOf(t)
-          var jokerpoints = 0
-          //joker am anfang
-          if (index == 0) {
-            jokerpoints = tiles(1).number - 1
-            for (i <- (index + 1) to tiles.size - 1) {
-              points += tiles(i).number
-            }
-            points += jokerpoints
-          }
-        }
-        case
-          None => {
-          for (i <- 0 to tiles.size - 1) {
-            points += tiles(i).number
+    val l = tiles
+    val pivotTile = l.find(t => t.joker == false) match {
+      case Some(t) => t
+      case None => new NoSuchElementException
+    }
 
-          }
-        }
+    val pivotIndex = l.indexOf(pivotTile)
 
 
+    val buffer = l.map(t => {
+      if (t.joker) -1
+      else t.number
+    }).toBuffer
 
-
-        /*val n = t
-        for (i <- (index + 1) to (tiles.size - 1)) {
-          if (tiles(index).number != n.number + i) {
-            if (tiles(index).joker) {
-              points += n.number + i
-            }
-          } else {
-            points += tiles(index).number
-          }
-        }
-        for (i <- (index - 1) to 0) {
-          if (tiles(index).number != n.number - i) {
-            if (tiles(index).joker) {
-              points += n.number - i
-            }
-          } else {
-            points += tiles(index).number
-          }
-        }*/
+    for (i <- 0 to l.size - 1) {
+      if (buffer(i) == -1) {
+        buffer.update(i, buffer(pivotIndex) - (pivotIndex - i))
       }
     }
 
-    return points
+    buffer.foreach(x => print(x + " "))
+
+    if (buffer.min < buffer(pivotIndex) - pivotIndex){
+      println("Invalid, to low")
+    }
+
+    if (buffer.max < buffer(pivotIndex) + (l.size - pivotIndex-1)){
+      println("Invalid, to high")
+    }
+
+    buffer.sum
   }
 
   def isValidRun(): Boolean = {
