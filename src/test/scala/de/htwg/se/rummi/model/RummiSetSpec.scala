@@ -90,6 +90,15 @@ class RummiSetSpec extends WordSpec with Matchers {
         run.isValidRun() should be(false)
       }
 
+      "be invalid with a jocker at the wrong place" in {
+        val joker: Tile = new Tile(-1, GREEN, true)
+        val list = joker :: g2 :: g4 :: Nil
+
+        val run = new RummiSet(list)
+        run.isValidRun() should be(false)
+      }
+
+
       "be return the correct number of points" in {
         var list = g1 :: g2 :: g3 :: Nil
 

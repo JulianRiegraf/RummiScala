@@ -67,6 +67,11 @@ class RummiSet(var tiles: List[Tile]) {
           return false
         }
       }
+      for (i <- 0 to tiles.size - 2){
+        if(buffer(i)+1 != buffer(i+1)){
+          return false
+        }
+      }
     } else {
       for (i <- 0 to tiles.size - 2) {
         if (n(i).number + 1 != n(i + 1).number)
