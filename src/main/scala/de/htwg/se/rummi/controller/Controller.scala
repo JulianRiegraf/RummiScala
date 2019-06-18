@@ -29,6 +29,8 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   def initGame() = {
     playingfield.generate(players)
+    println("Racks:")
+    playingfield.racks.foreach(x => println("\t" + x._1))
   }
 
   def getActivePlayer: Player = {
@@ -171,7 +173,7 @@ class Controller(playerNames: List[String]) extends Publisher {
         if (rack._2.contains(tile)) {
           println("Tile " + tile + " in rack")
           // Tile is in the rack of current player
-          playingfield.racks = playingfield.racks.filter(x => x._1 == getActivePlayer)
+          playingfield.racks = playingfield.racks.filter(x => x._1 != getActivePlayer)
           playingfield.racks = (rack._1, rack._2.filter(x => x != tile)) :: playingfield.racks
           tilesMovedFromRacktoGrid = tile :: tilesMovedFromRacktoGrid
           publish(new RackChangedEvent)
@@ -226,7 +228,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     if (set.tiles.size == 0) {
       playingfield.sets = playingfield.sets.filter(x => x != set)
     }
-    val rack = playingfield.racks.find(x => x._1 == getActivePlayer).get
+    val rack = playingfield.racks.find(x => x._1 != getActivePlayer).get
     playingfield.racks = playingfield.racks.filter(x => x._1 == getActivePlayer)
     playingfield.racks = (rack._1, tile :: rack._2) :: playingfield.racks
 

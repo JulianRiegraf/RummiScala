@@ -242,8 +242,7 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
 
     val p = controller.getPlayingField
-    println("p.size: " + p.size)
-    println("fieldTo.x - 1 : " + (fieldTo.x - 1))
+
     if (p.size > 0 && p.size > fieldTo.x - 1) {
       controller.moveTile(selectedTile, Some(p(fieldTo.x - 1)))
     } else {
