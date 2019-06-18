@@ -37,7 +37,7 @@ class SwingGui(controller: Controller) extends MainFrame {
   listenTo(checkButton)
 
   val statusLabel = new Label(controller.statusMessage)
-  val playerLabel = new Label("Player: " + controller.getActivePlayer.name)
+  val playerLabel = new Label("Current Player: " + controller.getActivePlayer.name)
 
   val grid = new GridPanel(8, 13) {
 
@@ -54,9 +54,15 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
+  val newGameMenuItem = new MenuItem("New Game")
+  listenTo(newGameMenuItem)
+  val quitMenuItem = new MenuItem("Quit")
+  listenTo(quitMenuItem)
+
   menuBar = new MenuBar() {
-    contents += new Menu("Menu Title") {
-      contents += new MenuItem("Quit")
+    contents += new Menu("Menu") {
+      contents += newGameMenuItem
+      contents += quitMenuItem
     }
   }
 
@@ -129,6 +135,10 @@ class SwingGui(controller: Controller) extends MainFrame {
         } else {
           statusLabel.text = "invalid"
         }
+      } else if (b == quitMenuItem){
+        sys.exit(0)
+      } else if (b == newGameMenuItem){
+        controller.initGame()
       }
     }
     case event: RackChangedEvent => {
@@ -152,7 +162,7 @@ class SwingGui(controller: Controller) extends MainFrame {
 
     case event: PlayerSwitchedEvent => {
       println("--- PlayerSwitchedEvent ---")
-      playerLabel.text = controller.getActivePlayer.name
+      playerLabel.text = "Current Player: " + controller.getActivePlayer.name
       loadRack()
     }
 
@@ -234,10 +244,10 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
-  /** *
+  /***
     * Moves a tile from a field to another field.
-    *
-    * @param field
+    * @param fieldTo
+    * @param fieldFrom
     * @param selectedTile
     */
   private def moveTile(fieldTo: Field, fieldFrom: Field, selectedTile: Tile): Unit = {

@@ -18,7 +18,11 @@ case class Playingfield() {
   // Alle Groups oder Runs, die auf dem Spielfeld liegen
   var sets: List[RummiSet] = Nil
 
-  def generate(players: List[Player]): Unit = {
+  def generateNewGame(players: List[Player]): Unit = {
+
+    sets = Nil
+    coveredTiles = Nil
+    racks = Nil
 
     for(i <- LOWEST_NUMBER to HIGHEST_NUMBER){
       coveredTiles = new Tile(i, RED) :: coveredTiles

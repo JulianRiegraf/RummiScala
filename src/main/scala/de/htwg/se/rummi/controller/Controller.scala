@@ -28,7 +28,18 @@ class Controller(playerNames: List[String]) extends Publisher {
   private var activePlayerIndex: Int = 0
 
   def initGame() = {
-    playingfield.generate(players)
+
+    statusMessage = ""
+    hasDrawn = false
+    currenSets = Nil
+    tilesMovedFromRacktoGrid = Nil
+    firstMoveList = players
+    activePlayerIndex = 0
+
+    playingfield.generateNewGame(players)
+
+    publish(new StatusMessageChangedEvent)
+    publish(new PlayerSwitchedEvent)
     println("Racks:")
     playingfield.racks.foreach(x => println("\t" + x._1))
   }
