@@ -123,6 +123,12 @@ class SwingGui(controller: Controller) extends MainFrame {
         controller.draw()
       } else if (b == finishButton) {
         controller.switchPlayer()
+      } else if (b == checkButton){
+        if (controller.isValid()){
+          statusLabel.text = "valid"
+        } else {
+          statusLabel.text = "invalid"
+        }
       }
     }
     case event: RackChangedEvent => {
@@ -146,7 +152,7 @@ class SwingGui(controller: Controller) extends MainFrame {
 
     case event: PlayerSwitchedEvent => {
       println("--- PlayerSwitchedEvent ---")
-
+      playerLabel.text = controller.getActivePlayer.name
       loadRack()
     }
 
