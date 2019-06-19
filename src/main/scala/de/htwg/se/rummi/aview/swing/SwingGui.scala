@@ -3,8 +3,9 @@ package de.htwg.se.rummi.aview.swing
 import java.awt.Color
 
 import de.htwg.se.rummi.controller._
-import de.htwg.se.rummi.model.{RummiColors, Tile}
+import de.htwg.se.rummi.model.{Ending, RummiColors, RummiSet, Tile}
 
+import scala.collection.mutable
 import scala.swing._
 import scala.swing.event.ButtonClicked
 
@@ -101,7 +102,7 @@ class SwingGui(controller: Controller) extends MainFrame {
       contents += Button("Color") {
         loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
       }
-      contents += Button("Number"){
+      contents += Button("Number") {
         loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.number, x.color)))
       }
     }
@@ -129,15 +130,15 @@ class SwingGui(controller: Controller) extends MainFrame {
         controller.draw()
       } else if (b == finishButton) {
         controller.switchPlayer()
-      } else if (b == checkButton){
-        if (controller.isValid()){
+      } else if (b == checkButton) {
+        if (controller.isValid()) {
           statusLabel.text = "valid"
         } else {
           statusLabel.text = "invalid"
         }
-      } else if (b == quitMenuItem){
+      } else if (b == quitMenuItem) {
         sys.exit(0)
-      } else if (b == newGameMenuItem){
+      } else if (b == newGameMenuItem) {
         controller.initGame()
       }
     }
@@ -223,29 +224,74 @@ class SwingGui(controller: Controller) extends MainFrame {
     })
   }
 
+  val setsInGrid = mutable.Map[RummiSet, (Field, Field)]()
+
+  def getLeftField(set: RummiSet): Field = {
+    setsInGrid(set)._1
+  }
+
+  def getRighttField(set: RummiSet): Field = {
+    setsInGrid(set)._2
+  }
+
+  def getSet(field: Field): RummiSet = {
+    setsInGrid.find(x => {
+      val (left, right) = x._2
+      left.row == field.row && left.col <= field.col && right.col >= field.col
+    }).get._1
+  }
+
   def loadGrid(): Unit = {
 
     fieldsInGrid.foreach(x => x.unsetTile())
-
-    val player = controller.getActivePlayer
     val field = controller.getPlayingField
 
-    var row = 1
-    var col = 1
-
     for (s <- field) {
-      s.tiles = s.tiles.sortBy(_.number)
-      for (t <- s.tiles) {
-        getFieldInGrid(row, col).get.setTile(t)
+      val leftField = getFieldInGrid(setsInGrid.size + 1, 1).get
+      val rightField = getFieldInGrid(setsInGrid.size + 1, 1 + s.tiles.size).get
+      setsInGrid.getOrElseUpdate(s, (leftField, rightField))
+    }
+
+    for ((set, field) <- setsInGrid.toList.reverse) {
+
+      val row = field._1.row
+      var col = field._1.col
+
+      for (i <- 0 to set.tiles.size - 1) {
+
+        val field = getFieldInGrid(row, col) match {
+          case Some(f) => f
+          case None => throw new NoSuchElementException
+        }
+
+        field.setTile(set.tiles(i))
+        val x: Int = set.tiles.size - 1
+
+        i match {
+          case 0 => field.border = Swing.MatteBorder(2, 2, 2, 0, Color.RED)
+          case `x` => field.border = Swing.MatteBorder(2, 0, 2, 2, Color.RED)
+          case _ => field.border = Swing.MatteBorder(2, 0, 2, 0, Color.RED)
+        }
         col += 1
       }
-      row += 1
-      col = 1
     }
+
+    println("Sets in Grid")
+    for ((s, (lf, rf)) <- setsInGrid) {
+      print("\t- (" + lf.row + ", " + lf.col + ") -> (" + rf.row + ", " + rf.col + ")\t")
+      s.tiles.foreach(x => print(x + "|"))
+      println()
+    }
+
   }
 
-  /***
+  def isTileOnField(tile: Tile): Boolean = {
+    return fieldsInGrid.find(t => t.tileOpt.isDefined && t.tileOpt.get == tile).isDefined
+  }
+
+  /** *
     * Moves a tile from a field to another field.
+    *
     * @param fieldTo
     * @param fieldFrom
     * @param selectedTile
@@ -257,15 +303,26 @@ class SwingGui(controller: Controller) extends MainFrame {
       return
     }
 
-    val p = controller.getPlayingField
+    getFieldInGrid(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
 
-    if (p.size > 0 && p.size > fieldTo.x - 1) {
-      controller.moveTile(selectedTile, Some(p(fieldTo.x - 1)))
-    } else {
-      controller.moveTile(selectedTile, None)
+    val row = fieldTo.row
+    val col = fieldTo.col
+    if (getFieldInGrid(row, col + 1).get.tileOpt.isDefined) {
+      // The field on the right is set
+      val set = getSet(getFieldInGrid(row, col + 1).get)
+      setsInGrid += set -> (fieldTo, getRighttField(set))
+      controller.moveTile(selectedTile, set, Ending.LEFT)
+    } else if (getFieldInGrid(row, col - 1).get.tileOpt.isDefined) {
+      // The field on the left is set
+      val set = getSet(getFieldInGrid(row, col - 1).get)
+      setsInGrid += set -> (getLeftField(set), fieldTo)
+      controller.moveTile(selectedTile, set, Ending.RIGHT)
     }
-    //fieldTo.setTile(selectedTile)
-    //fieldFrom.unsetTile()
+    else {
+      val newSet = new RummiSet(Nil)
+      setsInGrid += newSet -> (fieldTo, fieldTo)
+      controller.moveTile(selectedTile, newSet, Ending.RIGHT)
+    }
   }
 
   def isGridField(field: Field): Boolean = {
@@ -273,11 +330,11 @@ class SwingGui(controller: Controller) extends MainFrame {
   }
 
   def getFieldInGrid(x: Int, y: Int): Option[Field] = {
-    fieldsInGrid.find(f => (f.x == x && f.y == y))
+    fieldsInGrid.find(f => (f.row == x && f.col == y))
   }
 
   def getFieldInRack(x: Int, y: Int): Option[Field] = {
-    fieldsInRack.find(f => (f.x == x && f.y == y))
+    fieldsInRack.find(f => (f.row == x && f.col == y))
   }
 
 

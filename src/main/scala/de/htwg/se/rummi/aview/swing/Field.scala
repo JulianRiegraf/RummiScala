@@ -6,7 +6,7 @@ import de.htwg.se.rummi.model.{RummiColors, Tile}
 
 import scala.swing.Button
 
-class Field(val x: Int, val y: Int) extends Button {
+class Field(val row: Int, val col: Int) extends Button {
   var tileOpt = Option.empty[Tile]
   val WIDTH = 10
   val HIGHT = 10
