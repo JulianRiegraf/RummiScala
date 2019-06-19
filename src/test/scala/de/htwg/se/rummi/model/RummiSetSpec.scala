@@ -166,6 +166,20 @@ class RummiSetSpec extends WordSpec with Matchers {
         val run1 = new RummiSet(list)
         run1.getPoints() should be(10)
       }
+
+      "should append a tile, if added to the right" in {
+        val set = new RummiSet(List(g1))
+        set.add(g2, Ending.RIGHT)
+        set.tiles(0) should be(g1)
+        set.tiles(1) should be(g2)
+      }
+
+      "should add a tile to the head, if added to the left" in {
+        val set = new RummiSet(List(g1))
+        set.add(g2, Ending.LEFT)
+        set.tiles(0) should be(g2)
+        set.tiles(1) should be(g1)
+      }
     }
   }
 }

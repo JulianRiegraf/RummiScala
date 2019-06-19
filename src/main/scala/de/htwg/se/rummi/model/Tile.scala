@@ -16,7 +16,7 @@ case class Tile(number: Int, color: Color, joker: Boolean) {
     }
   }
 
-  override def productPrefix = {
+  override def toString : String = {
     if (joker) {
       color.stringInColor("J")
     } else {

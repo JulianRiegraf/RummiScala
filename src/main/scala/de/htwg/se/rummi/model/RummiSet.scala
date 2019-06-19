@@ -1,16 +1,21 @@
 package de.htwg.se.rummi.model
 
+import de.htwg.se.rummi.model.Ending.Ending
+
 class RummiSet(var tiles: List[Tile]) {
 
   val highest_number = 13
   val lowest_number = 1
 
-  def +(tile: Tile): Unit = {
-    tiles = tile :: tiles
+  def add(tile: Tile, ending: Ending): Unit = {
+    ending match {
+      case Ending.LEFT => tiles = tile +: tiles
+      case Ending.RIGHT => tiles = tiles :+ tile
+    }
   }
 
-  def -(tile: Tile): Unit = {
-    tiles = tile :: tiles
+  def remove(tile: Tile): Unit = {
+    tiles = tiles.filter(t => t != tile)
   }
 
 
@@ -67,8 +72,8 @@ class RummiSet(var tiles: List[Tile]) {
           return false
         }
       }
-      for (i <- 0 to tiles.size - 2){
-        if(buffer(i)+1 != buffer(i+1)){
+      for (i <- 0 to tiles.size - 2) {
+        if (buffer(i) + 1 != buffer(i + 1)) {
           return false
         }
       }
@@ -89,4 +94,12 @@ class RummiSet(var tiles: List[Tile]) {
     true
   }
 
+  override def toString: String = {
+    tiles.toStream.map(t => t.toString).mkString
+  }
+}
+
+object Ending extends Enumeration {
+  type Ending = Value
+  val LEFT, RIGHT = Value
 }
