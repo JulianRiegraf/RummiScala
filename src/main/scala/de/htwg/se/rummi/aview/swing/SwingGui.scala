@@ -307,12 +307,13 @@ class SwingGui(controller: Controller) extends MainFrame {
 
     val row = fieldTo.row
     val col = fieldTo.col
-    if (getFieldInGrid(row, col + 1).get.tileOpt.isDefined) {
+    if (getFieldInGrid(row, col + 1).isDefined && getFieldInGrid(row, col + 1).get.tileOpt.isDefined) {
       // The field on the right is set
       val set = getSet(getFieldInGrid(row, col + 1).get)
       setsInGrid += set -> (fieldTo, getRighttField(set))
       controller.moveTile(selectedTile, set, Ending.LEFT)
-    } else if (getFieldInGrid(row, col - 1).get.tileOpt.isDefined) {
+
+    } else if (getFieldInGrid(row, col - 1).isDefined && getFieldInGrid(row, col - 1).get.tileOpt.isDefined) {
       // The field on the left is set
       val set = getSet(getFieldInGrid(row, col - 1).get)
       setsInGrid += set -> (getLeftField(set), fieldTo)
