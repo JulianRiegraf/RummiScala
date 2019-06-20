@@ -2,8 +2,9 @@ package de.htwg.se.rummi.aview.swing
 
 import java.awt.Color
 
+import de.htwg.se.rummi.aview.swing.RackSortMode.RackSortMode
 import de.htwg.se.rummi.controller._
-import de.htwg.se.rummi.model.{Ending, RummiColors, RummiSet, Tile}
+import de.htwg.se.rummi.model.{Ending, Player, RummiSet, Tile}
 
 import scala.collection.mutable
 import scala.swing._
@@ -36,6 +37,8 @@ class SwingGui(controller: Controller) extends MainFrame {
   listenTo(getTileButton)
   val checkButton = new Button("Check")
   listenTo(checkButton)
+
+  var playerToSortModeMap = Map[Player, RackSortMode](controller.getActivePlayer -> RackSortMode.COLOR)
 
   val statusLabel = new Label(controller.statusMessage)
   val playerLabel = new Label("Current Player: " + controller.getActivePlayer.name)
@@ -94,20 +97,18 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
+
+  val sortButton = new Button("Sort Mode: " + playerToSortModeMap(controller.getActivePlayer))
+  listenTo(sortButton)
+
+
   val south = new GridPanel(1, 3) {
     contents += playerLabel
     contents += statusLabel
     contents += new FlowPanel {
-      contents += new Label("Sort by")
-      contents += Button("Color") {
-        loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
-      }
-      contents += Button("Number") {
-        loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.number, x.color)))
-      }
+      contents += sortButton
     }
   }
-
 
   contents = new BorderPanel() {
     add(center, BorderPanel.Position.Center)
@@ -140,6 +141,11 @@ class SwingGui(controller: Controller) extends MainFrame {
         sys.exit(0)
       } else if (b == newGameMenuItem) {
         controller.initGame()
+      } else if (b == sortButton) {
+        val activePlayer = controller.getActivePlayer
+        playerToSortModeMap = playerToSortModeMap + (activePlayer -> RackSortMode.next(playerToSortModeMap(activePlayer)))
+        loadRack()
+        sortButton.text = "Sort Mode: " + playerToSortModeMap(activePlayer)
       }
     }
     case event: RackChangedEvent => {
@@ -164,6 +170,9 @@ class SwingGui(controller: Controller) extends MainFrame {
     case event: PlayerSwitchedEvent => {
       println("--- PlayerSwitchedEvent ---")
       playerLabel.text = "Current Player: " + controller.getActivePlayer.name
+      if (!playerToSortModeMap.contains(controller.getActivePlayer)) {
+        playerToSortModeMap = playerToSortModeMap + (controller.getActivePlayer -> RackSortMode.COLOR)
+      }
       loadRack()
     }
 
@@ -207,7 +216,27 @@ class SwingGui(controller: Controller) extends MainFrame {
     loadGrid
   }
 
-  def loadRack(rack: List[Tile] = controller.getRack(controller.getActivePlayer)): Unit = {
+  /** *
+    * Get the tiles of the rack from the controller and sort them according to the current sorting mode of the active player.
+    *
+    * @return the sorted list of tiles
+    */
+  def sortedRackFromController: List[Tile] = {
+    val activePlayer = controller.getActivePlayer
+
+    playerToSortModeMap(activePlayer) match {
+      case RackSortMode.NONE => controller.getRack(activePlayer)
+      case RackSortMode.COLOR => controller.getRack(activePlayer).sortBy(x => (x.color, x.number))
+      case RackSortMode.NUMBER => controller.getRack(activePlayer).sortBy(x => (x.number, x.color))
+    }
+  }
+
+  /** *
+    * Displays the tiles in the rack of the player.
+    *
+    * @param rack The list of tiles. By default, these are fetched by sortedRackFromController.
+    */
+  def loadRack(rack: List[Tile] = sortedRackFromController): Unit = {
 
     fieldsInRack.foreach(x => x.unsetTile())
 
