@@ -1,6 +1,6 @@
 package de.htwg.se.rummi.model
 
-import de.htwg.se.rummi.model.RummiColors.Color
+import de.htwg.se.rummi.model.RummiColor.Color
 
 import scala.runtime.ScalaRunTime
 

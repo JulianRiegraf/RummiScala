@@ -6,10 +6,6 @@ import scala.io.StdIn
 
 object Rummi {
 
-
-  var tui: Tui = null
-  var gui: SwingGui = null
-
   def main(args: Array[String]): Unit = {
 
     println(" _____                               _  _            _")
@@ -20,23 +16,36 @@ object Rummi {
     println("|_|  \\_\\\\__,_||_| |_| |_||_| |_| |_||_||_|\\_\\ \\__,_||_.__/")
 
     println()
-    print("Number of players? ")
-    val numberOfPlayer = StdIn.readLine().toInt
-    var playerNames: List[String] = Nil
 
-    for (i <- 1 to numberOfPlayer) {
-      print("Player " + i + ": ")
-      playerNames = StdIn.readLine() :: playerNames
+    var playerNames: List[String] = null
+
+    if (args.size > 0) {
+      // Read player names from program arguments
+      val numberOfPlayers : Int= args(0).toInt
+      if (args.size - 1 != numberOfPlayers) throw new IllegalArgumentException
+      playerNames = args.slice(1, args.size).toList
+    } else {
+      // Ask user to input player names
+      print("Number of players? ")
+      val numberOfPlayer = StdIn.readLine().toInt
+
+      for (i <- 1 to numberOfPlayer) {
+        print("Player " + i + ": ")
+        playerNames = StdIn.readLine() :: playerNames
+      }
     }
 
     val controller = new Controller(playerNames)
     controller.initGame()
 
-    tui = new Tui(controller)
-    gui = new SwingGui(controller)
+    val tui = new Tui(controller)
+    val gui = new SwingGui(controller)
     gui.init
     gui.visible = true
 
+//    val gui1 = new SwingGui(controller)
+//    gui1.init
+//    gui1.visible = true
 
     var input: String = ""
 
@@ -44,9 +53,5 @@ object Rummi {
       input = StdIn.readLine()
       tui.processInputLine(input)
     } while (input != "q")
-
   }
 }
-
-
-

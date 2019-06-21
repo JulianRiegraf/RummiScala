@@ -1,7 +1,7 @@
 package de.htwg.se.rummi.model
 
 
-object RummiColors{
+object RummiColor{
 
   val ANSI_RESET = "\u001B[0m"
 
