@@ -43,6 +43,10 @@ object Rummi {
     gui.init
     gui.visible = true
 
+//    val gui1 = new SwingGui(controller)
+//    gui1.init
+//    gui1.visible = true
+
     var input: String = ""
 
     do {

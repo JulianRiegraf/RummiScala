@@ -1,7 +1,7 @@
 package de.htwg.se.rummi.model
 
 
-import de.htwg.se.rummi.model.RummiColors._
+import de.htwg.se.rummi.model.RummiColor._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.util.Random

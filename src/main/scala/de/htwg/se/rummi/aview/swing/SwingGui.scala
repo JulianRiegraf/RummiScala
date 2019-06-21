@@ -6,7 +6,6 @@ import de.htwg.se.rummi.aview.swing.RackSortMode.RackSortMode
 import de.htwg.se.rummi.controller._
 import de.htwg.se.rummi.model.{Ending, Player, RummiSet, Tile}
 
-import scala.collection.mutable
 import scala.swing._
 import scala.swing.event.ButtonClicked
 
@@ -21,9 +20,6 @@ class SwingGui(controller: Controller) extends MainFrame {
 
   preferredSize = new Dimension(1100, 800)
   title = "Rummikub in Scala"
-
-  var fieldsInGrid: List[Field] = Nil
-  var fieldsInRack: List[Field] = Nil
 
   val RACK_ROWS: Int = 4
   val RACK_COLS: Int = 13
@@ -43,20 +39,8 @@ class SwingGui(controller: Controller) extends MainFrame {
   val statusLabel = new Label(controller.statusMessage)
   val playerLabel = new Label("Current Player: " + controller.getActivePlayer.name)
 
-  val grid = new GridPanel(8, 13) {
-
-    preferredSize = new Dimension(GRID_COLS * 11, GRID_ROWS * 11)
-    resizable = false
-
-    for (i <- 1 to GRID_ROWS) {
-      for (j <- 1 to GRID_COLS) {
-        val field = new Field(i, j)
-        field.border = Swing.LineBorder(Color.BLACK, 1)
-        contents += field
-        fieldsInGrid = field :: fieldsInGrid
-      }
-    }
-  }
+  val grid = new Grid(8, 13)
+  val rack = new Rack(4, 13)
 
   val newGameMenuItem = new MenuItem("New Game")
   listenTo(newGameMenuItem)
@@ -67,22 +51,6 @@ class SwingGui(controller: Controller) extends MainFrame {
     contents += new Menu("Menu") {
       contents += newGameMenuItem
       contents += quitMenuItem
-    }
-  }
-
-
-  val rack: GridPanel = new GridPanel(4, 13) {
-
-    preferredSize = new Dimension(RACK_COLS * 11, RACK_ROWS * 11)
-    resizable = false
-
-    for (i <- 1 to RACK_ROWS) {
-      for (j <- 1 to RACK_COLS) {
-        val field = new Field(i, j)
-        field.border = Swing.LineBorder(Color.BLACK, 1)
-        contents += field
-        fieldsInRack = field :: fieldsInRack
-      }
     }
   }
 
@@ -97,10 +65,8 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
-
   val sortButton = new Button("Sort Mode: " + playerToSortModeMap(controller.getActivePlayer))
   listenTo(sortButton)
-
 
   val south = new GridPanel(1, 3) {
     contents += playerLabel
@@ -115,11 +81,10 @@ class SwingGui(controller: Controller) extends MainFrame {
     add(south, BorderPanel.Position.South)
   }
 
-  fieldsInRack.foreach(t => listenTo(t))
-  fieldsInGrid.foreach(t => listenTo(t))
+  rack.fields.foreach(t => listenTo(t))
+  grid.fields.foreach(t => listenTo(t))
 
   var selectedField: Option[Field] = Option.empty
-
 
   reactions += {
     case ButtonClicked(b) => {
@@ -144,18 +109,18 @@ class SwingGui(controller: Controller) extends MainFrame {
       } else if (b == sortButton) {
         val activePlayer = controller.getActivePlayer
         playerToSortModeMap = playerToSortModeMap + (activePlayer -> RackSortMode.next(playerToSortModeMap(activePlayer)))
-        loadRack()
+        rack.loadRack(getSortedRackTilesFromController)
         sortButton.text = "Sort Mode: " + playerToSortModeMap(activePlayer)
       }
     }
     case event: RackChangedEvent => {
       println("RackChangedEvent")
-      loadRack()
+      rack.loadRack(getSortedRackTilesFromController)
     }
 
     case event: FieldChangedEvent => {
       println("FieldChangedEvent")
-      loadGrid()
+      grid.update(controller.getPlayingField)
     }
 
     case event: ValidStateChangedEvent => {
@@ -173,7 +138,7 @@ class SwingGui(controller: Controller) extends MainFrame {
       if (!playerToSortModeMap.contains(controller.getActivePlayer)) {
         playerToSortModeMap = playerToSortModeMap + (controller.getActivePlayer -> RackSortMode.COLOR)
       }
-      loadRack()
+      rack.loadRack(getSortedRackTilesFromController)
     }
 
     case event: WinEvent => {
@@ -184,7 +149,6 @@ class SwingGui(controller: Controller) extends MainFrame {
       statusLabel.text = controller.statusMessage
     }
   }
-
 
   private def fieldClicked(clickedField: Field) = {
     // Click on a empty field and there is no field selected -> Do nothing
@@ -212,8 +176,8 @@ class SwingGui(controller: Controller) extends MainFrame {
   }
 
   def init = {
-    loadRack()
-    loadGrid
+    rack.loadRack(getSortedRackTilesFromController)
+    grid.update(controller.getPlayingField)
   }
 
   /** *
@@ -221,7 +185,7 @@ class SwingGui(controller: Controller) extends MainFrame {
     *
     * @return the sorted list of tiles
     */
-  def sortedRackFromController: List[Tile] = {
+  def getSortedRackTilesFromController: List[Tile] = {
     val activePlayer = controller.getActivePlayer
 
     playerToSortModeMap(activePlayer) match {
@@ -230,94 +194,7 @@ class SwingGui(controller: Controller) extends MainFrame {
       case RackSortMode.NUMBER => controller.getRack(activePlayer).sortBy(x => (x.number, x.color))
     }
   }
-
-  /** *
-    * Displays the tiles in the rack of the player.
-    *
-    * @param rack The list of tiles. By default, these are fetched by sortedRackFromController.
-    */
-  def loadRack(rack: List[Tile] = sortedRackFromController): Unit = {
-
-    fieldsInRack.foreach(x => x.unsetTile())
-
-    var row = 1
-    var col = 1
-    rack.foreach(tile => {
-      val field = getFieldInRack(row, col).get
-      field.setTile(tile)
-      col += 1
-      if (col > RACK_COLS) {
-        row += 1
-        col = 1
-      }
-    })
-  }
-
-  val setsInGrid = mutable.Map[RummiSet, (Field, Field)]()
-
-  def getLeftField(set: RummiSet): Field = {
-    setsInGrid(set)._1
-  }
-
-  def getRighttField(set: RummiSet): Field = {
-    setsInGrid(set)._2
-  }
-
-  def getSet(field: Field): RummiSet = {
-    setsInGrid.find(x => {
-      val (left, right) = x._2
-      left.row == field.row && left.col <= field.col && right.col >= field.col
-    }).get._1
-  }
-
-  def loadGrid(): Unit = {
-
-    fieldsInGrid.foreach(x => x.unsetTile())
-    val field = controller.getPlayingField
-
-    for (s <- field) {
-      val leftField = getFieldInGrid(setsInGrid.size + 1, 1).get
-      val rightField = getFieldInGrid(setsInGrid.size + 1, 1 + s.tiles.size).get
-      setsInGrid.getOrElseUpdate(s, (leftField, rightField))
-    }
-
-    for ((set, field) <- setsInGrid.toList.reverse) {
-
-      val row = field._1.row
-      var col = field._1.col
-
-      for (i <- 0 to set.tiles.size - 1) {
-
-        val field = getFieldInGrid(row, col) match {
-          case Some(f) => f
-          case None => throw new NoSuchElementException
-        }
-
-        field.setTile(set.tiles(i))
-        val x: Int = set.tiles.size - 1
-
-        i match {
-          case 0 => field.border = Swing.MatteBorder(2, 2, 2, 0, Color.RED)
-          case `x` => field.border = Swing.MatteBorder(2, 0, 2, 2, Color.RED)
-          case _ => field.border = Swing.MatteBorder(2, 0, 2, 0, Color.RED)
-        }
-        col += 1
-      }
-    }
-
-    println("Sets in Grid")
-    for ((s, (lf, rf)) <- setsInGrid) {
-      print("\t- (" + lf.row + ", " + lf.col + ") -> (" + rf.row + ", " + rf.col + ")\t")
-      s.tiles.foreach(x => print(x + "|"))
-      println()
-    }
-
-  }
-
-  def isTileOnField(tile: Tile): Boolean = {
-    return fieldsInGrid.find(t => t.tileOpt.isDefined && t.tileOpt.get == tile).isDefined
-  }
-
+  
   /** *
     * Moves a tile from a field to another field.
     *
@@ -327,50 +204,31 @@ class SwingGui(controller: Controller) extends MainFrame {
     */
   private def moveTile(fieldTo: Field, fieldFrom: Field, selectedTile: Tile): Unit = {
 
-    if (fieldsInRack.contains(fieldTo)) {
+    if (rack.fields.contains(fieldTo)) {
       controller.moveTileToRack(selectedTile)
       return
     }
 
-    getFieldInGrid(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
+    grid.getField(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
 
     val row = fieldTo.row
     val col = fieldTo.col
-    if (getFieldInGrid(row, col + 1).isDefined && getFieldInGrid(row, col + 1).get.tileOpt.isDefined) {
+    if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
       // The field on the right is set
-      val set = getSet(getFieldInGrid(row, col + 1).get)
-      setsInGrid += set -> (fieldTo, getRighttField(set))
+      val set = grid.getSet(grid.getField(row, col + 1).get).get
+      grid.setsInGrid += set -> (fieldTo, grid.getRighttField(set))
       controller.moveTile(selectedTile, set, Ending.LEFT)
 
-    } else if (getFieldInGrid(row, col - 1).isDefined && getFieldInGrid(row, col - 1).get.tileOpt.isDefined) {
+    } else if (grid.getField(row, col - 1).isDefined && grid.getField(row, col - 1).get.tileOpt.isDefined) {
       // The field on the left is set
-      val set = getSet(getFieldInGrid(row, col - 1).get)
-      setsInGrid += set -> (getLeftField(set), fieldTo)
+      val set = grid.getSet(grid.getField(row, col - 1).get).get
+      grid.setsInGrid += set -> (grid.getLeftField(set), fieldTo)
       controller.moveTile(selectedTile, set, Ending.RIGHT)
     }
     else {
       val newSet = new RummiSet(Nil)
-      setsInGrid += newSet -> (fieldTo, fieldTo)
+      grid.setsInGrid += newSet -> (fieldTo, fieldTo)
       controller.moveTile(selectedTile, newSet, Ending.RIGHT)
     }
-  }
-
-  def isGridField(field: Field): Boolean = {
-    return fieldsInGrid.contains(field)
-  }
-
-  def getFieldInGrid(x: Int, y: Int): Option[Field] = {
-    fieldsInGrid.find(f => (f.row == x && f.col == y))
-  }
-
-  def getFieldInRack(x: Int, y: Int): Option[Field] = {
-    fieldsInRack.find(f => (f.row == x && f.col == y))
-  }
-
-
-  def setField(x: Int, y: Int, color: Color, text: String): Unit = {
-    val field = getFieldInGrid(x, y).get
-    field.background = color
-    field.text = text
   }
 }

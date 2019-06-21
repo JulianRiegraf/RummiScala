@@ -1,6 +1,6 @@
 package de.htwg.se.rummi.model
 
-import de.htwg.se.rummi.model.RummiColors.{BLUE, GREEN, RED, YELLOW}
+import de.htwg.se.rummi.model.RummiColor.{BLUE, GREEN, RED, YELLOW}
 
 case class Playingfield() {
   
