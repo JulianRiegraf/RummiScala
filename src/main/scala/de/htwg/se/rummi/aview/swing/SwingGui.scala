@@ -171,6 +171,10 @@ class SwingGui(controller: Controller) extends MainFrame {
       if (clickedField == selectedField.get) {
         selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
         selectedField = None
+      }else{
+        selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
+        selectedField = Some(clickedField)
+        clickedField.border = Swing.LineBorder(Color.BLACK, 4)
       }
     }
   }
