@@ -64,12 +64,12 @@ class GridSpec extends WordSpec with Matchers {
     }
 
     "return None if the grid is to small for the set" in {
-      val strangeGrid = new Grid(1,1)
+      val strangeGrid = new Grid(1, 1)
       strangeGrid.getFreeSpaceOnGrid(set1) should be(None)
     }
 
     "return None if no space is found" in {
-      val singleRowGrid = new Grid(1,5)
+      val singleRowGrid = new Grid(1, 5)
       singleRowGrid.setsInGrid += (set1 -> (grid.getField(1, 2).get, grid.getField(1, 3).get))
       singleRowGrid.getFreeSpaceOnGrid(set1) should be(None)
     }
@@ -79,6 +79,23 @@ class GridSpec extends WordSpec with Matchers {
       grid.setsInGrid += (set1 -> (grid.getField(1, 2).get, grid.getField(1, 6).get))
       val field = grid.getField(1, 5).get
       grid.getSet(field).get should be(set1)
+    }
+
+    "gives the set to which a field belongs for all fields in the set" in {
+      grid.setsInGrid.clear()
+      grid.setsInGrid += (set1 -> (grid.getField(1, 2).get, grid.getField(1, 6).get))
+      for (i <- 2 to 6) {
+        val field = grid.getField(1, 5).get
+        grid.getSet(field).get should be(set1)
+      }
+    }
+
+    "gives None if there is no set for this field" in {
+      grid.setsInGrid.clear()
+      grid.setsInGrid += (set1 -> (grid.getField(1, 2).get, grid.getField(1, 6).get))
+
+      grid.getSet(grid.getField(1, 1).get) should be(None)
+      grid.getSet(grid.getField(1, 7).get) should be(None)
     }
   }
 }

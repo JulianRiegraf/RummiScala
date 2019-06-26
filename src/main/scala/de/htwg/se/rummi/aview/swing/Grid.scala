@@ -98,6 +98,9 @@ class Grid(val ROWS: Int, val COLS: Int) extends GridPanel(rows0 = ROWS, cols0 =
       }
     }
 
+    // Remove all sets which have been removed from the controller
+    setsInGrid.filter(s => !field.contains(s._1)).foreach(s => setsInGrid -= s._1)
+
     for ((set, field) <- setsInGrid.toList.reverse) {
 
       val row = field._1.row

@@ -166,11 +166,16 @@ class SwingGui(controller: Controller) extends MainFrame {
       selectedField = Some(clickedField)
       clickedField.border = Swing.LineBorder(Color.BLACK, 4)
     }
-    // Click on a filled field an there is a field selected --> Unselect if same selected and clicket is same, else Do nothing
+    // Click on a filled field an there is a field selected --> Unselect if same selected and clicket is same, else
+    //      deselect the currently selected field and select the clicked field
     else if (clickedField.tileOpt.isDefined && selectedField.isDefined) {
       if (clickedField == selectedField.get) {
         selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
         selectedField = None
+      } else {
+        selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
+        selectedField = Some(clickedField)
+        clickedField.border = Swing.LineBorder(Color.BLACK, 4)
       }
     }
   }
@@ -194,7 +199,7 @@ class SwingGui(controller: Controller) extends MainFrame {
       case RackSortMode.NUMBER => controller.getRack(activePlayer).sortBy(x => (x.number, x.color))
     }
   }
-  
+
   /** *
     * Moves a tile from a field to another field.
     *
@@ -209,13 +214,55 @@ class SwingGui(controller: Controller) extends MainFrame {
       return
     }
 
+    // Tile was taken from the middle of a set
+    if (grid.getField(fieldFrom.row, fieldFrom.col + 1).isDefined &&
+      grid.getField(fieldFrom.row, fieldFrom.col + 1).get.tileOpt.isDefined &&
+      grid.getField(fieldFrom.row, fieldFrom.col - 1).isDefined &&
+      grid.getField(fieldFrom.row, fieldFrom.col - 1).get.tileOpt.isDefined) {
+
+      val setFrom = grid.getSet(fieldFrom).get
+      val setStartField = grid.setsInGrid(setFrom)._1
+      val setEndField = grid.setsInGrid(setFrom)._2
+
+      val newSet = new RummiSet(Nil)
+
+      val tilesLeftSet = setFrom.tiles.filter(x => setFrom.tiles.indexOf(x) < setFrom.tiles.indexOf(selectedTile))
+      tilesLeftSet.foreach(x => controller.moveTile(x, newSet, Ending.RIGHT))
+
+      grid.setsInGrid += newSet -> (setStartField, grid.getField(fieldFrom.row, fieldFrom.col - 1).get)
+
+      grid.setsInGrid += setFrom -> (grid.getField(fieldFrom.row, fieldFrom.col + 1).get, setEndField)
+
+    }
+    else if (grid.getField(fieldFrom.row, fieldFrom.col + 1).isDefined && grid.getField(fieldFrom.row, fieldFrom.col + 1).get.tileOpt.isDefined) {
+      val setFrom = grid.getSet(fieldFrom).get
+      grid.setsInGrid += setFrom -> (grid.getField(fieldFrom.row, fieldFrom.col + 1).get, grid.setsInGrid(setFrom)._2)
+    }
+    else if (grid.getField(fieldFrom.row, fieldFrom.col - 1).isDefined && grid.getField(fieldFrom.row, fieldFrom.col - 1).get.tileOpt.isDefined) {
+      val setFrom = grid.getSet(fieldFrom).get
+      grid.setsInGrid += setFrom -> (grid.setsInGrid(setFrom)._1, grid.getField(fieldFrom.row, fieldFrom.col -1).get)
+    }
+
     grid.getField(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
 
     val row = fieldTo.row
     val col = fieldTo.col
-    if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
+    if (grid.getField(row, col - 1).isDefined &&
+      grid.getField(row, col - 1).get.tileOpt.isDefined &&
+      grid.getField(row, col + 1).isDefined &&
+      grid.getField(row, col + 1).get.tileOpt.isDefined) {
+      // Both neighbor fields are set -> combining the two sets to one
+
+      val leftSet = grid.getSet(grid.getField(row, col - 1).get).get
+      val rightSet = grid.getSet(grid.getField(row, col + 1).get).get
+      grid.setsInGrid += leftSet -> (grid.getLeftField(leftSet), grid.getField(row, col + rightSet.tiles.size).get)
+      controller.moveTile(selectedTile, leftSet, Ending.RIGHT)
+      rightSet.tiles.foreach(t => controller.moveTile(t, leftSet, Ending.RIGHT))
+
+    } else if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
       // The field on the right is set
-      val set = grid.getSet(grid.getField(row, col + 1).get).get
+      val a = grid.getField(row, col + 1).get
+      val set = grid.getSet(a).get
       grid.setsInGrid += set -> (fieldTo, grid.getRighttField(set))
       controller.moveTile(selectedTile, set, Ending.LEFT)
 
@@ -231,4 +278,5 @@ class SwingGui(controller: Controller) extends MainFrame {
       controller.moveTile(selectedTile, newSet, Ending.RIGHT)
     }
   }
+
 }
