@@ -194,7 +194,7 @@ class SwingGui(controller: Controller) extends MainFrame {
       case RackSortMode.NUMBER => controller.getRack(activePlayer).sortBy(x => (x.number, x.color))
     }
   }
-  
+
   /** *
     * Moves a tile from a field to another field.
     *
@@ -213,7 +213,19 @@ class SwingGui(controller: Controller) extends MainFrame {
 
     val row = fieldTo.row
     val col = fieldTo.col
-    if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
+    if (grid.getField(row, col - 1).isDefined &&
+      grid.getField(row, col - 1).get.tileOpt.isDefined &&
+      grid.getField(row, col + 1).isDefined &&
+      grid.getField(row, col + 1).get.tileOpt.isDefined) {
+      // Both neighbor fields are set -> combining the two sets to one
+
+      val leftSet = grid.getSet(grid.getField(row, col - 1).get).get
+      val rightSet = grid.getSet(grid.getField(row, col + 1).get).get
+      grid.setsInGrid += leftSet -> (grid.getLeftField(leftSet), grid.getField(row, col + rightSet.tiles.size).get)
+      controller.moveTile(selectedTile, leftSet, Ending.RIGHT)
+      rightSet.tiles.foreach(t => controller.moveTile(t, leftSet, Ending.RIGHT))
+
+    } else if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
       // The field on the right is set
       val set = grid.getSet(grid.getField(row, col + 1).get).get
       grid.setsInGrid += set -> (fieldTo, grid.getRighttField(set))
@@ -231,4 +243,5 @@ class SwingGui(controller: Controller) extends MainFrame {
       controller.moveTile(selectedTile, newSet, Ending.RIGHT)
     }
   }
+
 }
