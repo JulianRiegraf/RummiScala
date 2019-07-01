@@ -92,7 +92,6 @@ class Controller(playerNames: List[String]) extends Publisher {
     var activePlayer = getActivePlayer
     if(firstMoveList.contains(activePlayer)){
       val sumOfFirstMove = playingfield.sets.filter(x => !currenSets.contains(x)).map(x => x.getPoints()).sum
-//      val sumOfFirstMove = tilesMovedFromRacktoGrid.map(x => x.number).sum
       println("sumoffirstmove: "+ sumOfFirstMove)
       if(sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND){
         return false
@@ -118,6 +117,8 @@ class Controller(playerNames: List[String]) extends Publisher {
     // TODO: Joker Logic
     // draws and not played -> valid
     if(tilesMovedFromRacktoGrid.size == 0 && hasDrawn){
+      statusMessage = ""
+      publish(new StatusMessageChangedEvent)
       return true
     } else {
       // first move -> 30points or more
@@ -129,6 +130,9 @@ class Controller(playerNames: List[String]) extends Publisher {
         return false
       } else {
         if(tilesMovedFromRacktoGrid.size > 0){
+//          publish(new ValidStateChangedEvent)
+          statusMessage = ""
+          publish(new StatusMessageChangedEvent)
           return true
         } else {
           statusMessage = "Du musst ziehen oder Steine legen..."
