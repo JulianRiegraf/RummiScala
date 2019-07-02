@@ -26,6 +26,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   val playingfield = new Playingfield()
   val players = playerNames.map(x => new Player(x))
   var firstMoveList = players
+  var isValidField = false
   private var activePlayerIndex: Int = 0
 
   def initGame() = {
@@ -93,7 +94,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     if (firstMoveList.contains(activePlayer)) {
       val sumOfFirstMove = playingfield.sets.filter(x => !currenSets.contains(x)).map(x => x.getPoints()).sum
       println("sumoffirstmove: " + sumOfFirstMove)
-      if (sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND) {
+      if (sumOfFirstMove < MINIMUM_POINTS_FIRST_ROUND) {
         return false
       } else {
         firstMoveList = firstMoveList.filter(x => x != activePlayer)
@@ -126,6 +127,8 @@ class Controller(playerNames: List[String]) extends Publisher {
     if (tilesMovedFromRacktoGrid.size == 0 && hasDrawn) {
       statusMessage = ""
       publish(new StatusMessageChangedEvent)
+      isValidField = true
+      publish(new ValidStateChangedEvent)
       return true
     } else {
       // first move -> 30points or more
@@ -134,11 +137,14 @@ class Controller(playerNames: List[String]) extends Publisher {
       if (checker == false) {
         statusMessage = "Du musst in deinem ersten Zug 30 oder mehr Punkte legen."
         publish(new StatusMessageChangedEvent)
+        isValidField = false
+        publish(new ValidStateChangedEvent)
         return false
       } else {
         if (tilesMovedFromRacktoGrid.size > 0) {
           //TODO: Make Validstatuschange variable dependant
-          //publish(new ValidStateChangedEvent)
+          isValidField = true
+          publish(new ValidStateChangedEvent)
           statusMessage = ""
           publish(new StatusMessageChangedEvent)
           val winCheck = checkWinCon()
@@ -152,6 +158,8 @@ class Controller(playerNames: List[String]) extends Publisher {
         } else {
           statusMessage = "Du musst ziehen oder Steine legen..."
           publish(new StatusMessageChangedEvent)
+          isValidField = false
+          publish(new ValidStateChangedEvent)
           return false
         }
       }
