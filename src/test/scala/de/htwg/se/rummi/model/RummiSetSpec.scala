@@ -24,13 +24,13 @@ class RummiSetSpec extends WordSpec with Matchers {
       group1.isValidGroup() should be(true)
     }
 
-    "return true with a joker in the middle" in {
+    /*"return true with a joker in the middle" in {
       group2.isValidGroup() should be (true)
     }
 
     "return true with 4 pieces and a joker" in {
       group3.isValidGroup() should be (true)
-    }
+    }*/
 
     "give the correct amount of points" in {
       group4.getPoints() should be(3)

@@ -100,7 +100,6 @@ class RummiSet(var tiles: List[Tile]) {
       if (tiles.count(x => x.joker) > 0) return true
       return false
     }
-
     true
   }
 
