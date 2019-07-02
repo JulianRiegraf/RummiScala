@@ -44,13 +44,22 @@ class Tui(controller: Controller) extends Reactor {
   def printTui: Unit = {
     println("Current Player: " + controller.getActivePlayer.name)
     print("\n   ")
-    'A' to ('A' + COLS - 1).toChar foreach (x => print("  " + x))
-    println()
+    print(('A' to ('A' + COLS - 1).toChar).mkString("  ", "  ", "\n"))
+
     var i = 1
-    ((printGrid :+ "\n _________________________________________\n") ::: printRack).foreach(x => {
-      println(f"$i%2d" + "|" + x)
+    val gridStrings = printGrid.map(x => {
+      val s = f"$i%2d" + "|" + x
       i += 1
+      s
     })
+
+    val rackStrings = printRack.map(x => {
+      val s = f"$i%2d" + "|" + x
+      i += 1
+      s
+    })
+
+    ((gridStrings :+ "\n _________________________________________\n") ::: rackStrings).foreach(x => println(x))
   }
 
   reactions += {
@@ -128,8 +137,8 @@ class Tui(controller: Controller) extends Reactor {
     val fromChars = from.toList
     val toChars = to.toList
 
-    var toRow: Int = toChars(1).asDigit
-    var fromRow: Int = fromChars(1).asDigit
+    var toRow: Int = toChars.filter(x => x.isDigit).mkString("").toInt
+    var fromRow: Int = fromChars.filter(x => x.isDigit).mkString("").toInt
 
     var toField: Field = null
     var fromField: Field = null
@@ -143,27 +152,29 @@ class Tui(controller: Controller) extends Reactor {
 
     val toCol: Int = toColNumber(toChars(0).charValue()) match {
       case Some(c) => c
-      case None => {
+      case None =>
         return None
-      }
     }
 
     if (fromRow > grid.ROWS) {
       fromRow = fromRow - grid.ROWS
       printRack
-      fromField = rack.fields.find(x => x.row == fromRow && x.col == fromCol).get
+      fromField = rack.fields.find(x => x.row == fromRow && x.col == fromCol).getOrElse(return None)
     } else {
-      fromField = grid.fields.find(x => x.row == fromRow && x.col == fromCol).get
+      fromField = grid.fields.find(x => x.row == fromRow && x.col == fromCol).getOrElse(return None)
     }
 
     if (toRow > grid.ROWS) {
       toRow = toRow - grid.ROWS
-      toField = rack.fields.find(x => x.row == toRow && x.col == toCol).get
+      toField = rack.fields.find(x => x.row == toRow && x.col == toCol).getOrElse(return None)
     } else {
-      toField = grid.fields.find(x => x.row == toRow && x.col == toCol).get
+      toField = grid.fields.find(x => x.row == toRow && x.col == toCol).getOrElse(return None)
     }
 
-    return Some((fromField, toField, fromField.tileOpt.get))
+    fromField.tileOpt match {
+      case Some(tile) => Some((fromField, toField, tile))
+      case None => None
+    }
   }
 
   def toColNumber(col: Char): Option[Int] = {
