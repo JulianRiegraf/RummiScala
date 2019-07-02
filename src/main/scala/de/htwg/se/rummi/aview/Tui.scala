@@ -29,7 +29,7 @@ class Tui(controller: Controller) extends Reactor {
       case "f" => //controller.save
       case "l" => //controller.load
       case _ => input.split(" ").toList match {
-        case from :: _ :: to :: Nil =>{
+        case from :: _ :: to :: Nil => {
 
           val x = coordsToFields(from, to) match {
             case Some(x) => moveTile(x._1, x._2, x._3)
@@ -42,9 +42,15 @@ class Tui(controller: Controller) extends Reactor {
   }
 
   def printTui: Unit = {
-    printGrid
-    println("__________")
-    printRack
+    println("Current Player: " + controller.getActivePlayer.name)
+    print("\n   ")
+    'A' to ('A' + COLS - 1).toChar foreach (x => print("  " + x))
+    println()
+    var i = 1
+    ((printGrid :+ "\n _________________________________________\n") ::: printRack).foreach(x => {
+      println(f"$i%2d" + "|" + x)
+      i += 1
+    })
   }
 
   reactions += {
@@ -80,26 +86,31 @@ class Tui(controller: Controller) extends Reactor {
     }
   }
 
-  def printGrid: Unit = {
+  def printGrid: List[String] = {
+
+    var rows: List[String] = Nil
+
     for (r <- 1 to grid.ROWS) {
       val fieldsInRow = grid.fields.filter(f => f.row == r)
+      var row = ""
       for (c <- 1 to grid.COLS) {
-        print(" ")
-        print(fieldsInRow.find(f => f.col == c).get.tileOpt match {
+        row += " " + (fieldsInRow.find(f => f.col == c).get.tileOpt match {
           case Some(t) => if (t.number < 10) " " + t.toString else t.toString
           case None => " _"
         })
       }
-      println()
+      rows = rows :+ row
     }
+    rows
   }
 
-  def printRack: Unit = {
+  def printRack: List[String] = {
+    var rows: List[String] = Nil
     for (r <- 1 to rack.ROWS) {
       val fieldsInRow = rack.fields.filter(f => f.row == r)
+      var row = ""
       for (c <- 1 to rack.COLS) {
-        print(" ")
-        print(fieldsInRow.find(f => f.col == c).get.tileOpt match {
+        row += " " + (fieldsInRow.find(f => f.col == c).get.tileOpt match {
           case Some(t) => if (t.number < 10) {
             " " + t.toString
           } else {
@@ -108,16 +119,17 @@ class Tui(controller: Controller) extends Reactor {
           case None => " _"
         })
       }
-      println()
+      rows = rows :+ row
     }
+    rows
   }
 
   def coordsToFields(from: String, to: String): Option[(Field, Field, Tile)] = {
     val fromChars = from.toList
     val toChars = to.toList
 
-    var toRow : Int = toChars(1).asDigit
-    var fromRow : Int = fromChars(1).asDigit
+    var toRow: Int = toChars(1).asDigit
+    var fromRow: Int = fromChars(1).asDigit
 
     var toField: Field = null
     var fromField: Field = null
@@ -163,7 +175,7 @@ class Tui(controller: Controller) extends Reactor {
   }
 
 
-  private def moveTile(fieldFrom: Field, fieldTo : Field, selectedTile: Tile): Unit = {
+  private def moveTile(fieldFrom: Field, fieldTo: Field, selectedTile: Tile): Unit = {
 
     if (rack.fields.contains(fieldTo)) {
       controller.moveTileToRack(selectedTile)
