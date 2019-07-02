@@ -90,11 +90,10 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   def checkFirstMove(): Boolean = {
     var activePlayer = getActivePlayer
-    if(firstMoveList.contains(activePlayer)){
+    if (firstMoveList.contains(activePlayer)) {
       val sumOfFirstMove = playingfield.sets.filter(x => !currenSets.contains(x)).map(x => x.getPoints()).sum
-//      val sumOfFirstMove = tilesMovedFromRacktoGrid.map(x => x.number).sum
-      println("sumoffirstmove: "+ sumOfFirstMove)
-      if(sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND){
+      println("sumoffirstmove: " + sumOfFirstMove)
+      if (sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND) {
         return false
       } else {
         firstMoveList = firstMoveList.filter(x => x != activePlayer)
@@ -102,6 +101,13 @@ class Controller(playerNames: List[String]) extends Publisher {
       }
     }
     true
+  }
+
+  def checkWinCon(): Boolean = {
+    val activePlayer = getActivePlayer
+    val activeRack = getRack(activePlayer)
+    if(activeRack.size == 0) return true
+    else return false
   }
 
   def isValid(): Boolean = {
@@ -117,18 +123,31 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     // TODO: Joker Logic
     // draws and not played -> valid
-    if(tilesMovedFromRacktoGrid.size == 0 && hasDrawn){
+    if (tilesMovedFromRacktoGrid.size == 0 && hasDrawn) {
+      statusMessage = ""
+      publish(new StatusMessageChangedEvent)
       return true
     } else {
       // first move -> 30points or more
       val checker = checkFirstMove()
       println("checker: " + checker)
-      if (checker == false){
+      if (checker == false) {
         statusMessage = "Du musst in deinem ersten Zug 30 oder mehr Punkte legen."
         publish(new StatusMessageChangedEvent)
         return false
       } else {
-        if(tilesMovedFromRacktoGrid.size > 0){
+        if (tilesMovedFromRacktoGrid.size > 0) {
+          //TODO: Make Validstatuschange variable dependant
+          //publish(new ValidStateChangedEvent)
+          statusMessage = ""
+          publish(new StatusMessageChangedEvent)
+          val winCheck = checkWinCon()
+          if(winCheck){
+            //Game End
+            statusMessage = "Du hast gewonnen! °_°"
+            publish(new StatusMessageChangedEvent)
+            publish (new WinEvent(getActivePlayer))
+          }
           return true
         } else {
           statusMessage = "Du musst ziehen oder Steine legen..."
@@ -206,7 +225,7 @@ class Controller(playerNames: List[String]) extends Publisher {
       }
     }
 
-    if (!playingfield.sets.contains(setOption)){
+    if (!playingfield.sets.contains(setOption)) {
       playingfield.sets = setOption +: playingfield.sets
     }
 
