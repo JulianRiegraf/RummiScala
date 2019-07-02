@@ -14,26 +14,37 @@ class RummiSetSpec extends WordSpec with Matchers {
     val blueTile1 = new Tile(1, BLUE)
     val yellowTile1 = new Tile(1, YELLOW)
     val joker: Tile = new Tile(-1, GREEN, true)
+    val joker2: Tile = new Tile(-1, GREEN, true)
 
     val group1 = new RummiSet(greenTile1 :: blueTile1 :: yellowTile1 :: Nil)
     val group2 = new RummiSet(greenTile1 :: joker :: blueTile1 :: Nil)
     val group3 = new RummiSet(greenTile1 :: joker :: blueTile1 :: yellowTile1 :: Nil)
     val group4 = new RummiSet(greenTile1 :: blueTile1 :: yellowTile1 :: Nil)
+    val group5 = new RummiSet(joker :: joker2 :: blueTile1 :: yellowTile1 :: Nil)
+    val group6 = new RummiSet(joker :: blueTile1 :: yellowTile1 :: joker2 :: Nil)
 
     "return true " in {
       group1.isValidGroup() should be(true)
     }
 
-    /*"return true with a joker in the middle" in {
+    "return true with a joker in the middle" in {
       group2.isValidGroup() should be (true)
     }
 
     "return true with 4 pieces and a joker" in {
       group3.isValidGroup() should be (true)
-    }*/
+    }
 
     "give the correct amount of points" in {
       group4.getPoints() should be(3)
+    }
+
+    "return true with 4 pieces and 2 joker" in {
+      group5.isValidGroup() should be (true)
+    }
+
+    "return true with 4 pieces and 2 jokers" in {
+      group6.isValidGroup() should be (true)
     }
   }
 
