@@ -93,7 +93,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     if (firstMoveList.contains(activePlayer)) {
       val sumOfFirstMove = playingfield.sets.filter(x => !currenSets.contains(x)).map(x => x.getPoints()).sum
       println("sumoffirstmove: " + sumOfFirstMove)
-      if (sumOfFirstMove <= MINIMUM_POINTS_FIRST_ROUND) {
+      if (sumOfFirstMove < MINIMUM_POINTS_FIRST_ROUND) {
         return false
       } else {
         firstMoveList = firstMoveList.filter(x => x != activePlayer)
@@ -138,7 +138,7 @@ class Controller(playerNames: List[String]) extends Publisher {
       } else {
         if (tilesMovedFromRacktoGrid.size > 0) {
           //TODO: Make Validstatuschange variable dependant
-          //publish(new ValidStateChangedEvent)
+//          publish(new ValidStateChangedEvent(true))
           statusMessage = ""
           publish(new StatusMessageChangedEvent)
           val winCheck = checkWinCon()
@@ -267,7 +267,7 @@ case class PlayerSwitchedEvent() extends Event
 
 case class RackChangedEvent() extends Event
 
-case class ValidStateChangedEvent() extends Event
+case class ValidStateChangedEvent(state:Boolean) extends Event
 
 case class FieldChangedEvent() extends Event
 
