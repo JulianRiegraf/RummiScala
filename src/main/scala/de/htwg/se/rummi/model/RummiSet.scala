@@ -90,7 +90,12 @@ class RummiSet(var tiles: List[Tile]) {
   def isValidGroup(): Boolean = {
     if (tiles.size < 3) return false
     if (tiles.groupBy(_.number).size > 1) return false
-    if (tiles.groupBy(_.color).size != tiles.size) return false
+    if (tiles.groupBy(_.color).size == tiles.size) return true
+    else if(tiles.groupBy(_.color).size != tiles.size) {
+      //TODO: tiles.groupBy(_.color).size != tiles.size but contains joker
+      return false
+    }
+
     true
   }
 
