@@ -89,8 +89,22 @@ class RummiSet(var tiles: List[Tile]) {
 
   def isValidGroup(): Boolean = {
     if (tiles.size < 3) return false
-    if (tiles.groupBy(_.number).size > 1) return false
-    if (tiles.groupBy(_.color).size != tiles.size) return false
+    if (tiles.size > 4) return false
+    val isJoker = tiles.count(x => x.joker) > 0
+    if(!isJoker){
+      if (tiles.groupBy(_.number).size > 1) return false
+      if (tiles.groupBy(_.color).size != tiles.size) return false
+      return true
+    } else {
+      //joker involved
+      return true
+    }
+
+    /*if(tiles.groupBy(_.color).size != tiles.size) {
+      //bigger than 3 smaller than 4 and joker -> true
+      if (tiles.count(x => x.joker) > 0) return true
+      return false
+    }*/
     true
   }
 
