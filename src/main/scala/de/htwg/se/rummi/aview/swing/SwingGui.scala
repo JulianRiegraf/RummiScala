@@ -39,7 +39,7 @@ class SwingGui(controller: Controller) extends MainFrame {
   val statusLabel = new Label(controller.statusMessage)
   val playerLabel = new Label("Current Player: " + controller.getActivePlayer.name)
 
-  val grid = new Grid(8, 13)
+  val grid = new Grid(8, 13, controller)
   val rack = new Rack(4, 13)
 
   val newGameMenuItem = new MenuItem("New Game")
@@ -114,17 +114,17 @@ class SwingGui(controller: Controller) extends MainFrame {
       }
     }
     case event: RackChangedEvent => {
-      println("RackChangedEvent")
+      println("GUI: RackChangedEvent")
       rack.loadRack(getSortedRackTilesFromController)
     }
 
     case event: FieldChangedEvent => {
-      println("FieldChangedEvent")
+      println("GUI: FieldChangedEvent")
       grid.update(controller.getPlayingField)
     }
 
     case event: ValidStateChangedEvent => {
-      println("ValidStateChangedEvent")
+      println("GUI: ValidStateChangedEvent")
       if (controller.isValidField) {
         finishButton.enabled = true
       } else {
@@ -133,7 +133,7 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
 
     case event: PlayerSwitchedEvent => {
-      println("--- PlayerSwitchedEvent ---")
+      println("GUI: --- PlayerSwitchedEvent ---")
       playerLabel.text = "Current Player: " + controller.getActivePlayer.name
       if (!playerToSortModeMap.contains(controller.getActivePlayer)) {
         playerToSortModeMap = playerToSortModeMap + (controller.getActivePlayer -> RackSortMode.COLOR)
@@ -211,71 +211,8 @@ class SwingGui(controller: Controller) extends MainFrame {
 
     if (rack.fields.contains(fieldTo)) {
       controller.moveTileToRack(selectedTile)
-      return
-    }
-
-    // Tile was taken from the middle of a set
-    if (grid.getField(fieldFrom.row, fieldFrom.col + 1).isDefined &&
-      grid.getField(fieldFrom.row, fieldFrom.col + 1).get.tileOpt.isDefined &&
-      grid.getField(fieldFrom.row, fieldFrom.col - 1).isDefined &&
-      grid.getField(fieldFrom.row, fieldFrom.col - 1).get.tileOpt.isDefined) {
-
-      val setFrom = grid.getSet(fieldFrom).get
-      val setStartField = grid.setsInGrid(setFrom)._1
-      val setEndField = grid.setsInGrid(setFrom)._2
-
-      val newSet = new RummiSet(Nil)
-
-      val tilesLeftSet = setFrom.tiles.filter(x => setFrom.tiles.indexOf(x) < setFrom.tiles.indexOf(selectedTile))
-      tilesLeftSet.foreach(x => controller.moveTile(x, newSet, Ending.RIGHT))
-
-      grid.setsInGrid += newSet -> (setStartField, grid.getField(fieldFrom.row, fieldFrom.col - 1).get)
-
-      grid.setsInGrid += setFrom -> (grid.getField(fieldFrom.row, fieldFrom.col + 1).get, setEndField)
-
-    }
-    else if (grid.getField(fieldFrom.row, fieldFrom.col + 1).isDefined && grid.getField(fieldFrom.row, fieldFrom.col + 1).get.tileOpt.isDefined) {
-      val setFrom = grid.getSet(fieldFrom).get
-      grid.setsInGrid += setFrom -> (grid.getField(fieldFrom.row, fieldFrom.col + 1).get, grid.setsInGrid(setFrom)._2)
-    }
-    else if (grid.getField(fieldFrom.row, fieldFrom.col - 1).isDefined && grid.getField(fieldFrom.row, fieldFrom.col - 1).get.tileOpt.isDefined) {
-      val setFrom = grid.getSet(fieldFrom).get
-      grid.setsInGrid += setFrom -> (grid.setsInGrid(setFrom)._1, grid.getField(fieldFrom.row, fieldFrom.col -1).get)
-    }
-
-    grid.getField(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
-
-    val row = fieldTo.row
-    val col = fieldTo.col
-    if (grid.getField(row, col - 1).isDefined &&
-      grid.getField(row, col - 1).get.tileOpt.isDefined &&
-      grid.getField(row, col + 1).isDefined &&
-      grid.getField(row, col + 1).get.tileOpt.isDefined) {
-      // Both neighbor fields are set -> combining the two sets to one
-
-      val leftSet = grid.getSet(grid.getField(row, col - 1).get).get
-      val rightSet = grid.getSet(grid.getField(row, col + 1).get).get
-      grid.setsInGrid += leftSet -> (grid.getLeftField(leftSet), grid.getField(row, col + rightSet.tiles.size).get)
-      controller.moveTile(selectedTile, leftSet, Ending.RIGHT)
-      rightSet.tiles.foreach(t => controller.moveTile(t, leftSet, Ending.RIGHT))
-
-    } else if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
-      // The field on the right is set
-      val a = grid.getField(row, col + 1).get
-      val set = grid.getSet(a).get
-      grid.setsInGrid += set -> (fieldTo, grid.getRighttField(set))
-      controller.moveTile(selectedTile, set, Ending.LEFT)
-
-    } else if (grid.getField(row, col - 1).isDefined && grid.getField(row, col - 1).get.tileOpt.isDefined) {
-      // The field on the left is set
-      val set = grid.getSet(grid.getField(row, col - 1).get).get
-      grid.setsInGrid += set -> (grid.getLeftField(set), fieldTo)
-      controller.moveTile(selectedTile, set, Ending.RIGHT)
-    }
-    else {
-      val newSet = new RummiSet(Nil)
-      grid.setsInGrid += newSet -> (fieldTo, fieldTo)
-      controller.moveTile(selectedTile, newSet, Ending.RIGHT)
+    } else {
+      grid.moveTile(fieldTo, fieldFrom, selectedTile)
     }
   }
 

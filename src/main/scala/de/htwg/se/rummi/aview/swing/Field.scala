@@ -4,7 +4,7 @@ import java.awt.Color
 
 import de.htwg.se.rummi.model.{RummiColor, Tile}
 
-import scala.swing.Button
+import scala.swing.{Button, Swing}
 
 class Field(val row: Int, val col: Int) extends Button {
   var tileOpt = Option.empty[Tile]
@@ -36,5 +36,6 @@ class Field(val row: Int, val col: Int) extends Button {
     background = Color.WHITE
     text = ""
     tileOpt = None
+    border = Swing.LineBorder(Color.BLACK, 1)
   }
 }

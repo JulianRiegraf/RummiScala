@@ -1,6 +1,7 @@
 package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.aview.swing.Grid
+import de.htwg.se.rummi.controller.Controller
 import de.htwg.se.rummi.model.RummiColor.GREEN
 import de.htwg.se.rummi.model.{RummiSet, Tile}
 import org.scalatest.{Matchers, WordSpec}
@@ -10,7 +11,8 @@ class GridSpec extends WordSpec with Matchers {
   "A grid is the playingfield of the game. When constructed it " should {
 
 
-    val grid = new Grid(8, 13)
+    val mockController = new Controller(Nil)
+    val grid = new Grid(8, 13, mockController)
 
     val set1 = new RummiSet(new Tile(1, GREEN) :: new Tile(2, GREEN) :: Nil)
     val set2 = new RummiSet(new Tile(1, GREEN) :: new Tile(2, GREEN) :: Nil)
@@ -64,12 +66,12 @@ class GridSpec extends WordSpec with Matchers {
     }
 
     "return None if the grid is to small for the set" in {
-      val strangeGrid = new Grid(1, 1)
+      val strangeGrid = new Grid(1, 1, mockController)
       strangeGrid.getFreeSpaceOnGrid(set1) should be(None)
     }
 
     "return None if no space is found" in {
-      val singleRowGrid = new Grid(1, 5)
+      val singleRowGrid = new Grid(1, 5, mockController)
       singleRowGrid.setsInGrid += (set1 -> (grid.getField(1, 2).get, grid.getField(1, 3).get))
       singleRowGrid.getFreeSpaceOnGrid(set1) should be(None)
     }

@@ -42,8 +42,6 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     publish(new StatusMessageChangedEvent)
     publish(new PlayerSwitchedEvent)
-    println("Racks:")
-    playingfield.racks.foreach(x => println("\t" + x._1))
   }
 
   def getActivePlayer: Player = {

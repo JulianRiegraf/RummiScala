@@ -39,6 +39,8 @@ object Rummi {
     controller.initGame()
 
     val tui = new Tui(controller)
+    tui.printTui
+
     val gui = new SwingGui(controller)
     gui.init
     gui.visible = true
