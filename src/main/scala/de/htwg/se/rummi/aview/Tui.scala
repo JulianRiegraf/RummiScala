@@ -11,7 +11,7 @@ class Tui(controller: Controller) extends Reactor {
   val ROWS: Int = 8
   val COLS: Int = 13
 
-  val grid = new Grid(8, 13)
+  val grid = new Grid(8, 13, controller)
   val rack = new Rack(4, 13)
 
 
@@ -33,7 +33,7 @@ class Tui(controller: Controller) extends Reactor {
 
           val x = coordsToFields(from, to) match {
             case Some(x) => moveTile(x._1, x._2, x._3)
-            case _ => println("Invalid input")
+            case _ => println("TUI: Invalid input")
           }
         }
         case _ =>
@@ -42,7 +42,7 @@ class Tui(controller: Controller) extends Reactor {
   }
 
   def printTui: Unit = {
-    println("Current Player: " + controller.getActivePlayer.name)
+    println("TUI: Current Player: " + controller.getActivePlayer.name)
     print("\n   ")
     print(('A' to ('A' + COLS - 1).toChar).mkString("  ", "  ", "\n"))
 
@@ -64,24 +64,24 @@ class Tui(controller: Controller) extends Reactor {
 
   reactions += {
     case event: RackChangedEvent => {
-      println("RackChangedEvent")
+      println("TUI: RackChangedEvent")
       rack.loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
       printTui
     }
 
     case event: FieldChangedEvent => {
-      println("FieldChangedEvent")
+      println("TUI: FieldChangedEvent")
       grid.update(controller.getPlayingField)
       printTui
     }
 
     case event: ValidStateChangedEvent => {
-      println("ValidStateChangedEvent")
+      println("TUI: ValidStateChangedEvent")
     }
 
     case event: PlayerSwitchedEvent => {
-      println("--- PlayerSwitchedEvent ---")
-      println("Current Player: " + controller.getActivePlayer.name)
+      println("TUI: --- PlayerSwitchedEvent ---")
+      println("TUI: Current Player: " + controller.getActivePlayer.name)
       rack.loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
       printTui
     }
@@ -91,7 +91,7 @@ class Tui(controller: Controller) extends Reactor {
     }
 
     case event: StatusMessageChangedEvent => {
-      println("Status: " + controller.statusMessage)
+      println("TUI: Status: " + controller.statusMessage)
     }
   }
 
@@ -186,45 +186,12 @@ class Tui(controller: Controller) extends Reactor {
   }
 
 
-  private def moveTile(fieldFrom: Field, fieldTo: Field, selectedTile: Tile): Unit = {
+  def moveTile(fieldFrom: Field, fieldTo: Field, selectedTile: Tile): Unit = {
 
     if (rack.fields.contains(fieldTo)) {
       controller.moveTileToRack(selectedTile)
-      return
-    }
-
-    grid.getField(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
-
-    val row = fieldTo.row
-    val col = fieldTo.col
-    if (grid.getField(row, col - 1).isDefined &&
-      grid.getField(row, col - 1).get.tileOpt.isDefined &&
-      grid.getField(row, col + 1).isDefined &&
-      grid.getField(row, col + 1).get.tileOpt.isDefined) {
-      // Both neighbor fields are set -> combining the two sets to one
-
-      val leftSet = grid.getSet(grid.getField(row, col - 1).get).get
-      val rightSet = grid.getSet(grid.getField(row, col + 1).get).get
-      grid.setsInGrid += leftSet -> (grid.getLeftField(leftSet), grid.getField(row, col + rightSet.tiles.size).get)
-      controller.moveTile(selectedTile, leftSet, Ending.RIGHT)
-      rightSet.tiles.foreach(t => controller.moveTile(t, leftSet, Ending.RIGHT))
-
-    } else if (grid.getField(row, col + 1).isDefined && grid.getField(row, col + 1).get.tileOpt.isDefined) {
-      // The field on the right is set
-      val set = grid.getSet(grid.getField(row, col + 1).get).get
-      grid.setsInGrid += set -> (fieldTo, grid.getRighttField(set))
-      controller.moveTile(selectedTile, set, Ending.LEFT)
-
-    } else if (grid.getField(row, col - 1).isDefined && grid.getField(row, col - 1).get.tileOpt.isDefined) {
-      // The field on the left is set
-      val set = grid.getSet(grid.getField(row, col - 1).get).get
-      grid.setsInGrid += set -> (grid.getLeftField(set), fieldTo)
-      controller.moveTile(selectedTile, set, Ending.RIGHT)
-    }
-    else {
-      val newSet = new RummiSet(Nil)
-      grid.setsInGrid += newSet -> (fieldTo, fieldTo)
-      controller.moveTile(selectedTile, newSet, Ending.RIGHT)
+    } else {
+      grid.moveTile(fieldTo, fieldFrom, selectedTile)
     }
   }
 

@@ -2,12 +2,13 @@ package de.htwg.se.rummi.aview.swing
 
 import java.awt.Color
 
-import de.htwg.se.rummi.model.{RummiSet, Tile}
+import de.htwg.se.rummi.controller.Controller
+import de.htwg.se.rummi.model.{Ending, RummiSet, Tile}
 
 import scala.collection.mutable
 import scala.swing.{Dimension, GridPanel, Swing}
 
-class Grid(val ROWS: Int, val COLS: Int) extends GridPanel(rows0 = ROWS, cols0 = COLS) {
+class Grid(val ROWS: Int, val COLS: Int, controller: Controller) extends GridPanel(rows0 = ROWS, cols0 = COLS) {
 
   var fields: List[Field] = Nil
   val setsInGrid = mutable.Map[RummiSet, (Field, Field)]()
@@ -85,53 +86,69 @@ class Grid(val ROWS: Int, val COLS: Int) extends GridPanel(rows0 = ROWS, cols0 =
     None
   }
 
-  def update(field: List[RummiSet]): Unit = {
+  def update(setList: List[RummiSet]): Unit = {
 
     fields.foreach(x => x.unsetTile())
 
-    for (s <- field) {
-      if (!setsInGrid.contains(s)) {
+    setList.foreach(updateSets)
+
+    // Remove all sets which have been removed from the controller
+    setsInGrid.filter(s => !setList.contains(s._1)).foreach(s => setsInGrid -= s._1)
+
+    //
+    setsInGrid.toList.reverse.foreach(x => putTilesOnFields(x._1, x._2))
+
+  }
+
+  private def putTilesOnFields(set: RummiSet, fields: (Field, Field)) = {
+
+    var col = fields._1.col
+
+    for (i <- 0 to set.tiles.size - 1) {
+
+      val field = getField(fields._1.row, col) match {
+        case Some(f) => f
+        case None => throw new NoSuchElementException
+      }
+      field.setTile(set.tiles(i))
+
+      // Print red border
+      val lastTile: Int = set.tiles.size - 1
+
+      i match {
+        case 0 => field.border = Swing.MatteBorder(2, 2, 2, 0, Color.RED)
+        case `lastTile` => field.border = Swing.MatteBorder(2, 0, 2, 2, Color.RED)
+        case _ => field.border = Swing.MatteBorder(2, 0, 2, 0, Color.RED)
+      }
+      col += 1
+    }
+  }
+
+  private def updateSets(s: RummiSet) = {
+
+    if (!setsInGrid.contains(s)) {
+      // Set is added by another UI
+      getFreeSpaceOnGrid(s) match {
+        case Some(space) => setsInGrid += (s -> space)
+        case None => throw new NoSuchElementException("No free space found.")
+      }
+    } else {
+      // Set is already on the playing field, but may have changed
+
+      val fieldsTuple = setsInGrid(s)
+
+      val from = fieldsTuple._1
+      val to = fieldsTuple._2
+
+      val length = to.col - from.col + 1
+
+      if (length != s.tiles.size) { // Check if size of set has changed
         getFreeSpaceOnGrid(s) match {
           case Some(space) => setsInGrid += (s -> space)
           case None => throw new NoSuchElementException("No free space found.")
         }
       }
     }
-
-    // Remove all sets which have been removed from the controller
-    setsInGrid.filter(s => !field.contains(s._1)).foreach(s => setsInGrid -= s._1)
-
-    for ((set, field) <- setsInGrid.toList.reverse) {
-
-      val row = field._1.row
-      var col = field._1.col
-
-      for (i <- 0 to set.tiles.size - 1) {
-
-        val field = getField(row, col) match {
-          case Some(f) => f
-          case None => throw new NoSuchElementException
-        }
-
-        field.setTile(set.tiles(i))
-        val x: Int = set.tiles.size - 1
-
-        i match {
-          case 0 => field.border = Swing.MatteBorder(2, 2, 2, 0, Color.RED)
-          case `x` => field.border = Swing.MatteBorder(2, 0, 2, 2, Color.RED)
-          case _ => field.border = Swing.MatteBorder(2, 0, 2, 0, Color.RED)
-        }
-        col += 1
-      }
-    }
-
-    println("Sets in Grid")
-    for ((s, (lf, rf)) <- setsInGrid) {
-      print("\t- (" + lf.row + ", " + lf.col + ") -> (" + rf.row + ", " + rf.col + ")\t")
-      s.tiles.foreach(x => print(x + "|"))
-      println()
-    }
-
   }
 
   def isTileOnField(tile: Tile): Boolean = {
@@ -144,5 +161,72 @@ class Grid(val ROWS: Int, val COLS: Int) extends GridPanel(rows0 = ROWS, cols0 =
 
   def getField(x: Int, y: Int): Option[Field] = {
     fields.find(f => (f.row == x && f.col == y))
+  }
+
+  def moveTile(fieldTo: Field, fieldFrom: Field, selectedTile: Tile) = {
+
+    // Tile was taken from the middle of a set
+    if (getField(fieldFrom.row, fieldFrom.col + 1).isDefined &&
+      getField(fieldFrom.row, fieldFrom.col + 1).get.tileOpt.isDefined &&
+      getField(fieldFrom.row, fieldFrom.col - 1).isDefined &&
+      getField(fieldFrom.row, fieldFrom.col - 1).get.tileOpt.isDefined) {
+
+      val setFrom = getSet(fieldFrom).get
+      val setStartField = setsInGrid(setFrom)._1
+      val setEndField = setsInGrid(setFrom)._2
+
+      val newSet = new RummiSet(Nil)
+
+      val tilesLeftSet = setFrom.tiles.filter(x => setFrom.tiles.indexOf(x) < setFrom.tiles.indexOf(selectedTile))
+      tilesLeftSet.foreach(x => controller.moveTile(x, newSet, Ending.RIGHT))
+
+      setsInGrid += newSet -> (setStartField, getField(fieldFrom.row, fieldFrom.col - 1).get)
+
+      setsInGrid += setFrom -> (getField(fieldFrom.row, fieldFrom.col + 1).get, setEndField)
+
+    }
+    else if (getField(fieldFrom.row, fieldFrom.col + 1).isDefined && getField(fieldFrom.row, fieldFrom.col + 1).get.tileOpt.isDefined) {
+      val setFrom = getSet(fieldFrom).get
+      setsInGrid += setFrom -> (getField(fieldFrom.row, fieldFrom.col + 1).get, setsInGrid(setFrom)._2)
+    }
+    else if (getField(fieldFrom.row, fieldFrom.col - 1).isDefined && getField(fieldFrom.row, fieldFrom.col - 1).get.tileOpt.isDefined) {
+      val setFrom = getSet(fieldFrom).get
+      setsInGrid += setFrom -> (setsInGrid(setFrom)._1, getField(fieldFrom.row, fieldFrom.col - 1).get)
+    }
+
+    getField(fieldTo.row, fieldTo.col).get.setTile(selectedTile)
+
+    val row = fieldTo.row
+    val col = fieldTo.col
+    if (getField(row, col - 1).isDefined &&
+      getField(row, col - 1).get.tileOpt.isDefined &&
+      getField(row, col + 1).isDefined &&
+      getField(row, col + 1).get.tileOpt.isDefined) {
+      // Both neighbor fields are set -> combining the two sets to one
+
+      val leftSet = getSet(getField(row, col - 1).get).get
+      val rightSet = getSet(getField(row, col + 1).get).get
+      setsInGrid += leftSet -> (getLeftField(leftSet), getField(row, col + rightSet.tiles.size).get)
+      controller.moveTile(selectedTile, leftSet, Ending.RIGHT)
+      rightSet.tiles.foreach(t => controller.moveTile(t, leftSet, Ending.RIGHT))
+
+    } else if (getField(row, col + 1).isDefined && getField(row, col + 1).get.tileOpt.isDefined) {
+      // The field on the right is set
+      val a = getField(row, col + 1).get
+      val set = getSet(a).get
+      setsInGrid += set -> (fieldTo, getRighttField(set))
+      controller.moveTile(selectedTile, set, Ending.LEFT)
+
+    } else if (getField(row, col - 1).isDefined && getField(row, col - 1).get.tileOpt.isDefined) {
+      // The field on the left is set
+      val set = getSet(getField(row, col - 1).get).get
+      setsInGrid += set -> (getLeftField(set), fieldTo)
+      controller.moveTile(selectedTile, set, Ending.RIGHT)
+    }
+    else {
+      val newSet = new RummiSet(Nil)
+      setsInGrid += newSet -> (fieldTo, fieldTo)
+      controller.moveTile(selectedTile, newSet, Ending.RIGHT)
+    }
   }
 }
