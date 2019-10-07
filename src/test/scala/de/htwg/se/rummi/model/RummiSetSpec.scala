@@ -188,6 +188,14 @@ class RummiSetSpec extends WordSpec with Matchers {
         run1.getPoints() should be(10)
       }
 
+      "joker at wrong position should be false" in {
+        val joker: Tile = new Tile(-1, GREEN, true)
+        var list = joker :: g1  :: g3 :: Nil
+
+        val run1 = new RummiSet(list)
+        run1.isValidRun() should be(false)
+      }
+
       "should append a tile, if added to the right" in {
         val set = new RummiSet(List(g1))
         set.add(g2, Ending.RIGHT)

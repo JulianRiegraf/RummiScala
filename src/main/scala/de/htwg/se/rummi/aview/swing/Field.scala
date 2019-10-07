@@ -24,6 +24,7 @@ class Field(val row: Int, val col: Int) extends Button {
       case RummiColor.GREEN => Color.decode("#90EE90")
       case RummiColor.BLUE => Color.decode("#add8e6")
       case RummiColor.RED => Color.decode("#ff0000")
+      case RummiColor.WHITE => Color.decode("#000000")
     }
 
     text = tile.joker match {

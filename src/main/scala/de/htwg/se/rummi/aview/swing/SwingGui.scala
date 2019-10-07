@@ -2,7 +2,6 @@ package de.htwg.se.rummi.aview.swing
 
 import java.awt.Color
 
-import de.htwg.se.rummi.aview.swing.RackSortMode.RackSortMode
 import de.htwg.se.rummi.controller._
 import de.htwg.se.rummi.model.{Ending, Player, RummiSet, Tile}
 
@@ -21,12 +20,6 @@ class SwingGui(controller: Controller) extends MainFrame {
   preferredSize = new Dimension(1100, 800)
   title = "Rummikub in Scala"
 
-  val RACK_ROWS: Int = 4
-  val RACK_COLS: Int = 13
-
-  val GRID_ROWS: Int = 8
-  val GRID_COLS: Int = 13
-
   val finishButton = new Button("Finish")
   listenTo(finishButton)
   val getTileButton = new Button("Get Tile")
@@ -34,13 +27,11 @@ class SwingGui(controller: Controller) extends MainFrame {
   val checkButton = new Button("Check")
   listenTo(checkButton)
 
-  var playerToSortModeMap = Map[Player, RackSortMode](controller.getActivePlayer -> RackSortMode.COLOR)
-
   val statusLabel = new Label(controller.statusMessage)
-  val playerLabel = new Label("Current Player: " + controller.getActivePlayer.name)
+  val playerLabel = new Label("Current Player: " + controller.activePlayer.name)
 
-  val grid = new Grid(8, 13, controller)
-  val rack = new Rack(4, 13)
+  val grid = new SwingGrid(8, 13)
+  val rack = new SwingGrid(4, 13)
 
   val newGameMenuItem = new MenuItem("New Game")
   listenTo(newGameMenuItem)
@@ -65,7 +56,7 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
-  val sortButton = new Button("Sort Mode: " + playerToSortModeMap(controller.getActivePlayer))
+  val sortButton = new Button("Sort")
   listenTo(sortButton)
 
   val south = new GridPanel(1, 3) {
@@ -97,34 +88,22 @@ class SwingGui(controller: Controller) extends MainFrame {
       } else if (b == finishButton) {
         controller.switchPlayer()
       } else if (b == checkButton) {
-        if (controller.isValid()) {
-          statusLabel.text = "valid"
-        } else {
-          statusLabel.text = "invalid"
-        }
+
       } else if (b == quitMenuItem) {
         sys.exit(0)
       } else if (b == newGameMenuItem) {
         controller.initGame()
       } else if (b == sortButton) {
-        val activePlayer = controller.getActivePlayer
-        playerToSortModeMap = playerToSortModeMap + (activePlayer -> RackSortMode.next(playerToSortModeMap(activePlayer)))
-        rack.loadRack(getSortedRackTilesFromController)
-        sortButton.text = "Sort Mode: " + playerToSortModeMap(activePlayer)
+        controller.sortRack()
       }
-    }
-    case event: RackChangedEvent => {
-      println("GUI: RackChangedEvent")
-      rack.loadRack(getSortedRackTilesFromController)
     }
 
     case event: FieldChangedEvent => {
-      println("GUI: FieldChangedEvent")
-      grid.update(controller.getPlayingField)
+      grid.displayGrid(controller.field)
+      rack.displayGrid(controller.getRack(controller.activePlayer))
     }
 
     case event: ValidStateChangedEvent => {
-      println("GUI: ValidStateChangedEvent")
       if (controller.isValidField) {
         finishButton.enabled = true
       } else {
@@ -133,12 +112,8 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
 
     case event: PlayerSwitchedEvent => {
-      println("GUI: --- PlayerSwitchedEvent ---")
-      playerLabel.text = "Current Player: " + controller.getActivePlayer.name
-      if (!playerToSortModeMap.contains(controller.getActivePlayer)) {
-        playerToSortModeMap = playerToSortModeMap + (controller.getActivePlayer -> RackSortMode.COLOR)
-      }
-      rack.loadRack(getSortedRackTilesFromController)
+      playerLabel.text = "Current Player: " + controller.activePlayer.name
+      rack.displayGrid(controller.getRack(controller.activePlayer))
     }
 
     case event: WinEvent => {
@@ -157,7 +132,9 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
     // Click on a empty field an there is a field selected -> move selected to empty field, unselect
     else if (clickedField.tileOpt.isEmpty && selectedField.isDefined) {
-      moveTile(clickedField, selectedField.get, selectedField.get.tileOpt.get)
+
+      moveTile(clickedField)
+
       selectedField.get.border = Swing.LineBorder(Color.BLACK, 1)
       selectedField = None
     }
@@ -180,40 +157,27 @@ class SwingGui(controller: Controller) extends MainFrame {
     }
   }
 
+  private def moveTile(clickedField: Field) = {
+    if (rack.containsField(selectedField.get) && grid.containsField(clickedField)) {
+      controller.moveTileFromRackToField(selectedField.get.tileOpt.get, clickedField.row, clickedField.col)
+    }
+
+    if (grid.containsField(selectedField.get) && rack.containsField(clickedField)) {
+      controller.moveTileFromFieldToRack(selectedField.get.tileOpt.get, clickedField.row, clickedField.col)
+    }
+
+    if (rack.containsField(selectedField.get) && rack.containsField(clickedField)) {
+      controller.moveTileWithinRack(selectedField.get.tileOpt.get, clickedField.row, clickedField.col)
+    }
+
+    if (grid.containsField(clickedField) && grid.containsField(selectedField.get)) {
+      controller.moveTileWithinField(selectedField.get.tileOpt.get, clickedField.row, clickedField.col)
+    }
+  }
+
   def init = {
-    rack.loadRack(getSortedRackTilesFromController)
-    grid.update(controller.getPlayingField)
-  }
-
-  /** *
-    * Get the tiles of the rack from the controller and sort them according to the current sorting mode of the active player.
-    *
-    * @return the sorted list of tiles
-    */
-  def getSortedRackTilesFromController: List[Tile] = {
-    val activePlayer = controller.getActivePlayer
-
-    playerToSortModeMap(activePlayer) match {
-      case RackSortMode.NONE => controller.getRack(activePlayer)
-      case RackSortMode.COLOR => controller.getRack(activePlayer).sortBy(x => (x.color, x.number))
-      case RackSortMode.NUMBER => controller.getRack(activePlayer).sortBy(x => (x.number, x.color))
-    }
-  }
-
-  /** *
-    * Moves a tile from a field to another field.
-    *
-    * @param fieldTo
-    * @param fieldFrom
-    * @param selectedTile
-    */
-  private def moveTile(fieldTo: Field, fieldFrom: Field, selectedTile: Tile): Unit = {
-
-    if (rack.fields.contains(fieldTo)) {
-      controller.moveTileToRack(selectedTile)
-    } else {
-      grid.moveTile(fieldTo, fieldFrom, selectedTile)
-    }
+    rack.displayGrid(controller.getRack(controller.activePlayer))
+    grid.displayGrid(controller.field)
   }
 
 }
