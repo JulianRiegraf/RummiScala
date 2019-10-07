@@ -2,8 +2,8 @@ package de.htwg.se.rummi.controller
 
 import java.util.NoSuchElementException
 
-import de.htwg.se.rummi.model.Ending.Ending
-import de.htwg.se.rummi.model._
+import de.htwg.se.rummi.Const
+import de.htwg.se.rummi.model.{RummiSet, _}
 
 import scala.swing.Publisher
 import scala.swing.event.Event
@@ -15,13 +15,11 @@ class Controller(playerNames: List[String]) extends Publisher {
   val lowest_number = 1
   val highest_number = 13
 
-  val MINIMUM_POINTS_FIRST_ROUND = 30
   var statusMessage: String = ""
   var hasDrawn = false
-  var currenSets: List[RummiSet] = Nil
+  var currentSets: List[RummiSet] = Nil
 
-
-  var tilesMovedFromRacktoGrid: List[Tile] = Nil
+  var tilesMovedFromRackToGrid: List[Tile] = Nil
 
   val playingfield = new Playingfield()
   val players = playerNames.map(x => new Player(x))
@@ -33,8 +31,8 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     statusMessage = ""
     hasDrawn = false
-    currenSets = Nil
-    tilesMovedFromRacktoGrid = Nil
+    currentSets = Nil
+    tilesMovedFromRackToGrid = Nil
     firstMoveList = players
     activePlayerIndex = 0
 
@@ -44,40 +42,39 @@ class Controller(playerNames: List[String]) extends Publisher {
     publish(new PlayerSwitchedEvent)
   }
 
-  def getActivePlayer: Player = {
+  def activePlayer: Player = {
     players(activePlayerIndex)
   }
 
   // finish
   def switchPlayer(): Unit = {
 
-    if (isValid() == false) {
+    if (playerCanFinish() == false) {
       return
     }
 
     activePlayerIndex = activePlayerIndex + 1
-    //println("activepolayer: " + activePlayerIndex)
     if (activePlayerIndex >= players.size) {
       activePlayerIndex = 0
     }
 
-    //println("Active Player: " + getActivePlayer.name)
     hasDrawn = false
-
-    currenSets = playingfield.sets
+    currentSets = extractSets(field)
 
     // check if playingfield is valid
     statusMessage = ""
     publish(new StatusMessageChangedEvent)
-    tilesMovedFromRacktoGrid = Nil
+    tilesMovedFromRackToGrid = Nil
     publish(new PlayerSwitchedEvent)
   }
 
-  def getPlayingField: List[RummiSet] = {
-    playingfield.sets
+  def field: Grid = {
+    playingfield.grid
   }
 
-  def getRack(player: Player): List[Tile] = {
+  def setGrid(newGrid: Grid) = playingfield.grid = newGrid
+
+  def getRack(player: Player): Grid = {
     playingfield.racks.find(x => x._1 == player) match {
       case Some(t) => t._2
       case None => {
@@ -87,191 +84,230 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
   }
 
-  def checkFirstMove(): Boolean = {
-    var activePlayer = getActivePlayer
+  def setRack(newRack: Grid) = {
+    playingfield.racks = playingfield.racks + (activePlayer -> newRack)
+  }
+
+  /**
+    * Did player reached minimum score to get out?
+    *
+    * @return true if player reached minimum score
+    */
+  def checkMinimumScoreInFirstMove(): Boolean = {
     if (firstMoveList.contains(activePlayer)) {
-      val sumOfFirstMove = playingfield.sets.filter(x => !currenSets.contains(x)).map(x => x.getPoints()).sum
-      println("sumoffirstmove: " + sumOfFirstMove)
-      if (sumOfFirstMove < MINIMUM_POINTS_FIRST_ROUND) {
+      val sumOfFirstMove = extractSets(field)
+        .filter(x => !currentSets.contains(x))
+        .map(x => x.getPoints()).sum
+
+      if (sumOfFirstMove < Const.MINIMUM_POINTS_FIRST_ROUND) {
         return false
-      } else {
-        firstMoveList = firstMoveList.filter(x => x != activePlayer)
-        return true
       }
+
+      firstMoveList = firstMoveList.drop(firstMoveList.indexOf(activePlayer))
     }
     true
+  }
+
+  def extractSets(field: Grid): List[RummiSet] = {
+    var sets: List[RummiSet] = Nil
+
+    field.tiles.groupBy(x => x._1._1).map(x => x._2).foreach(map => {
+      var list = map.map(x => (x._1._2, x._2)).toList.sortBy(x => x._1)
+
+      while (!list.isEmpty) {
+        var tiles: List[Tile] = List.empty
+        tiles = list.head._2 :: tiles
+        while (list.find(x => x._1 == list.head._1 + 1).isDefined) {
+          list = list.drop(1)
+          tiles = list.head._2 :: tiles
+        }
+        sets = new RummiSet(tiles.reverse) :: sets
+        list = list.drop(1)
+      }
+    })
+    sets
   }
 
   def checkWinCon(): Boolean = {
-    val activePlayer = getActivePlayer
     val activeRack = getRack(activePlayer)
-    if(activeRack.size == 0) return true
-    else return false
+    if (activeRack.size == 0) true
+    else false
   }
 
-  def isValid(): Boolean = {
+  def playerCanFinish(): Boolean = {
 
-    // CHeck if playingfield is valid
-    for (s <- playingfield.sets) {
-      if (s.isValidRun() == false && s.isValidGroup() == false) {
-        statusMessage = "Dein Spielfeld hat fehler, du Pisser!"
-        publish(new StatusMessageChangedEvent)
-        return false
-      }
-    }
-
-    // TODO: Joker Logic
-    // draws and not played -> valid
-    if (tilesMovedFromRacktoGrid.size == 0 && hasDrawn) {
-      statusMessage = ""
-      publish(new StatusMessageChangedEvent)
-      isValidField = true
-      publish(new ValidStateChangedEvent)
+    if (hasDrawn) {
       return true
-    } else {
-      // first move -> 30points or more
-      val checker = checkFirstMove()
-      println("checker: " + checker)
-      if (checker == false) {
-        statusMessage = "Du musst in deinem ersten Zug 30 oder mehr Punkte legen."
-        publish(new StatusMessageChangedEvent)
-        isValidField = false
-        publish(new ValidStateChangedEvent)
-        return false
-      } else {
-        if (tilesMovedFromRacktoGrid.size > 0) {
-          //TODO: Make Validstatuschange variable dependant
-          isValidField = true
-          publish(new ValidStateChangedEvent)
-          statusMessage = ""
-          publish(new StatusMessageChangedEvent)
-          val winCheck = checkWinCon()
-          if(winCheck){
-            //Game End
-            statusMessage = "Du hast gewonnen! °_°"
-            publish(new StatusMessageChangedEvent)
-            publish (new WinEvent(getActivePlayer))
-          }
-          return true
-        } else {
-          statusMessage = "Du musst ziehen oder Steine legen..."
-          publish(new StatusMessageChangedEvent)
-          isValidField = false
-          publish(new ValidStateChangedEvent)
-          return false
-        }
-      }
     }
+
+    if (tilesMovedFromRackToGrid.size <= 0) {
+      statusMessage = "Please place at least one stone or draw."
+      publish(new StatusMessageChangedEvent)
+      return false
+    }
+
+    if (!validateField()) {
+      return false
+    }
+
+    if (!checkMinimumScoreInFirstMove()) {
+      statusMessage = "You have to score 30 or more points on your first turn."
+      publish(new StatusMessageChangedEvent)
+      return false
+    }
+
+    if (checkWinCon()) {
+      //Game End
+      statusMessage = "You won! °_°"
+      publish(new StatusMessageChangedEvent)
+      publish(new WinEvent(activePlayer))
+    }
+
     true
   }
 
-
-  def getStatusMessage: String = {
-    statusMessage
+  /**
+    * Check if all RummiSets on the field are valid.
+    *
+    * @return true if all sets are valid.
+    */
+  private def validateField(): Boolean = {
+    var valid = true
+    for (s <- extractSets(field)) {
+      if (s.isValidRun() == false && s.isValidGroup() == false) {
+        valid = false
+      }
+    }
+    if (isValidField != valid) {
+      isValidField = valid
+      publish(new ValidStateChangedEvent)
+    }
+    valid
   }
 
+  /**
+    * Draw: If the player can not place a stone on the field, he must take a stone from the stack of covered stones.
+    */
   def draw(): Unit = {
 
     if (hasDrawn) {
-      statusMessage = "Du darfst nur einmal ziehen, du Papnase."
+      statusMessage = "You can draw only once."
       publish(new StatusMessageChangedEvent)
       return
     }
 
-    if (tilesMovedFromRacktoGrid.size != 0) {
-      statusMessage = "Du host scho glegt, du Zipfelklatscher."
+    if (tilesMovedFromRackToGrid.size != 0) {
+      statusMessage = "You have already placed a stone on the field."
       publish(new StatusMessageChangedEvent)
       return
     }
 
-    val newTile = playingfield.coveredTiles(0)
+    val newTile = playingfield.coveredTiles.head
     playingfield.coveredTiles = playingfield.coveredTiles.filter(x => x != newTile)
 
-    var r = playingfield.racks.find(x => x._1 == getActivePlayer) match {
-      case Some(r) => r
-      case None => throw new NoSuchElementException
+    // get the current rack from the player
+    val oldRack = playingfield.racks.find(x => x._1 == activePlayer) match {
+      case Some(r) => r._2
+      case None => throw new NoSuchElementException("No rack for player '" + activePlayer + "'.")
     }
 
-    playingfield.racks = playingfield.racks.filter(x => x._1 != getActivePlayer)
+    // create a new rack with the tiles from the old one plus the newly drawn one
+    val newRack = oldRack.getFreeField() match {
+      case Some(freeField) => Grid(Const.RACK_ROWS, Const.RACK_COLS, oldRack.tiles + (freeField -> newTile))
+      case None => throw new NoSuchElementException("No space in rack left.")
+    }
 
-    playingfield.racks = (r._1, newTile :: r._2) :: playingfield.racks
+    setRack(newRack)
 
     hasDrawn = true
-    publish(new RackChangedEvent)
+    publish(new FieldChangedEvent)
   }
 
-  def moveTile(tile: Tile, setOption: RummiSet, ending: Ending): Unit = {
 
-    // The player moves a tile from the rack or from a set on the playing field to another set
-    // set is None, if the tile builds a new set
-
-    playingfield.racks.find(x => x._1 == getActivePlayer) match {
-      case Some(rack) => {
-        if (rack._2.contains(tile)) {
-          println("Tile " + tile + " moved from rack to grid")
-          playingfield.racks = playingfield.racks.filter(x => x._1 != getActivePlayer)
-          playingfield.racks = (rack._1, rack._2.filter(x => x != tile)) :: playingfield.racks
-          tilesMovedFromRacktoGrid = tile :: tilesMovedFromRacktoGrid
-          publish(new RackChangedEvent)
+  def moveTile(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int): (Grid, Grid) = {
+    gridFrom.getTilePosition(tile) match {
+      case Some(x) => {
+        if (gridTo == gridFrom) {
+          // tile is moved within the same grid
+          val tiles = gridFrom.tiles - (x) + ((newRow, newCol) -> tile)
+          (Grid(gridFrom.ROWS, gridFrom.COLS, tiles),
+            Grid(gridTo.ROWS, gridTo.COLS, tiles))
         } else {
-          println("Tile " + tile + " moved within the grid")
-
-          // Hole Set, welches tile enthält
-          val set: RummiSet = playingfield.sets.find(x => x.tiles.contains(tile)).get
-          set.tiles = set.tiles.filter(t => t != tile)
-          if (set.tiles.size == 0) {
-            playingfield.sets = playingfield.sets.filter(x => x != set)
-          }
+          (Grid(gridFrom.ROWS, gridFrom.COLS, gridFrom.tiles - (x)),
+            Grid(gridTo.ROWS, gridTo.COLS, gridTo.tiles + ((newRow, newCol) -> tile)))
         }
-
-
       }
-      case None => {
-        println("None")
-      }
+      case None => throw new NoSuchElementException("Tile not found in rack.")
     }
-
-    if (!playingfield.sets.contains(setOption)) {
-      playingfield.sets = setOption +: playingfield.sets
-    }
-
-    setOption.add(tile, ending)
-
-    statusMessage = ""
-    publish(new StatusMessageChangedEvent)
-    publish(new FieldChangedEvent)
   }
 
-  def moveTileToRack(tile: Tile): Unit = {
-    println("Move " + tile + " to rack.")
-
-    if (!tilesMovedFromRacktoGrid.contains(tile)) {
-      statusMessage = "Des darfsch du ned!"
-      publish(new StatusMessageChangedEvent)
-      return
-    }
-
-    val set: RummiSet = playingfield.sets.find(x => x.tiles.contains(tile)).get
-    set.tiles = set.tiles.filter(t => t != tile)
-    if (set.tiles.size == 0) {
-      playingfield.sets = playingfield.sets.filter(x => x != set)
-    }
-    val rack = playingfield.racks.find(x => x._1 == getActivePlayer).get
-    playingfield.racks = playingfield.racks.filter(x => x._1 != getActivePlayer)
-    playingfield.racks = (rack._1, tile :: rack._2) :: playingfield.racks
-
-    tilesMovedFromRacktoGrid = tilesMovedFromRacktoGrid.filter(x => x != tile)
-
-    publish(new RackChangedEvent)
+  def fieldChanged(): Unit = {
     publish(new FieldChangedEvent)
+    validateField()
   }
 
+  def moveTileWithinField(tile: Tile, newRow: Int, newCol: Int): Unit = {
+    val (_, f) = moveTile(field, field, tile, newRow, newCol)
+    setGrid(f)
+    fieldChanged()
+  }
 
+  def moveTileWithinRack(tile: Tile, newRow: Int, newCol: Int): Unit = {
+    val (_, rack) = moveTile(getRack(activePlayer), getRack(activePlayer), tile, newRow, newCol)
+    setRack(rack)
+    fieldChanged()
+  }
+
+  def moveTileFromRackToField(tile: Tile, newRow: Int, newCol: Int): Unit = {
+    val (rack, grid) = moveTile(getRack(activePlayer), field, tile, newRow, newCol)
+    setRack(rack)
+    setGrid(grid)
+    tilesMovedFromRackToGrid = tilesMovedFromRackToGrid :+ tile
+    fieldChanged()
+  }
+
+  def moveTileFromFieldToRack(tile: Tile, newRow: Int, newCol: Int): Unit = {
+    val (f, rack): (Grid, Grid) = moveTile(field, getRack(activePlayer), tile, newRow, newCol)
+    setRack(rack)
+    setGrid(f)
+    tilesMovedFromRackToGrid = tilesMovedFromRackToGrid.filter(x => x != tile)
+    fieldChanged()
+  }
+
+  def sortRack(): Unit = {
+    val sortedRack = sortRack(getRack(activePlayer))
+    setRack(sortedRack)
+    fieldChanged()
+  }
+
+  private def sortRack(rack: Grid): Grid = {
+    var tilesByColor = rack.tiles.map(x => x._2)
+      .groupBy(x => x.color)
+    while (tilesByColor.size > Const.RACK_ROWS) {
+      // combine colors if there are to many
+      val keyOfFirstElement = tilesByColor.keys.toList(0)
+      val keyOfSecondElement = tilesByColor.keys.toList(1)
+      val elements = tilesByColor(keyOfFirstElement) ++ tilesByColor(keyOfSecondElement)
+      tilesByColor = tilesByColor + (keyOfSecondElement -> elements)
+      tilesByColor = tilesByColor - tilesByColor.keys.toList(0)
+    }
+    var newMap: Map[(Int, Int), Tile] = Map.empty
+    var row = 1
+    tilesByColor.map(x => x._2.toList).foreach(listOfTiles => {
+      var col = 1
+      listOfTiles.sortBy(t => t.number).foreach(t => {
+        newMap = newMap + ((row, col) -> t)
+        col += 1
+      })
+      row += 1
+    })
+    Grid(Const.RACK_ROWS, Const.RACK_COLS, newMap)
+  }
 }
 
 case class PlayerSwitchedEvent() extends Event
 
-case class RackChangedEvent() extends Event
+//case class RackChangedEvent() extends Event
 
 case class ValidStateChangedEvent() extends Event
 

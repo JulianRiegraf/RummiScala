@@ -1,11 +1,12 @@
 package de.htwg.se.rummi.controller
 
+import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.model.RummiColor.GREEN
-import de.htwg.se.rummi.model.{Player, RummiSet, Tile}
+import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile}
 import org.scalatest.{Matchers, WordSpec}
 
-
 class ControllerSpec extends WordSpec with Matchers {
+
 
   var playerNames: List[String] = List("patrick", "julian")
 
@@ -20,73 +21,75 @@ class ControllerSpec extends WordSpec with Matchers {
   val g13 = new Tile(13, GREEN)
 
   "When the game starts a new Game " should {
-    "be initiated " in{
-      controller.statusMessage should be ("")
-      controller.hasDrawn should be (false)
-      controller.currenSets should be (Nil)
-      controller.tilesMovedFromRacktoGrid should be (Nil)
-      controller.firstMoveList should be (controller.players)
+    "be initiated " in {
+      controller.statusMessage should be("")
+      controller.hasDrawn should be(false)
+      controller.currentSets should be(Nil)
+      controller.tilesMovedFromRackToGrid should be(Nil)
+      controller.firstMoveList should be(controller.players)
     }
 
     "and should tell you who the first active Player is " in {
-      controller.getActivePlayer should be (Player(playerNames(0)))
+      controller.activePlayer should be(Player(playerNames(0)))
     }
   }
 
   "The first play is either to draw a card or to play 30+ valid points " should {
     "return false and publish a statusmessage if there are 29 or less pts played" in {
-      val noMove = controller.isValid()
-      noMove should be (false)
-      controller.statusMessage should be ("Du musst in deinem ersten Zug 30 oder mehr Punkte legen.")
+      val noMove = controller.playerCanFinish()
+      noMove should be(false)
     }
 
     "return true if there are 30 or more valid points played " in {
       val list = g11 :: g12 :: g13 :: Nil
-      val playingfieldSet = new RummiSet(list)
-      controller.playingfield.sets = List(playingfieldSet)
-      controller.tilesMovedFromRacktoGrid = list
+      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g12) +
+          ((1, 3) -> g13))
 
-      val correctMove = controller.isValid()
-      correctMove should be (true)
+      controller.tilesMovedFromRackToGrid = list
+
+      val correctMove = controller.playerCanFinish()
+      correctMove should be(true)
     }
 
-    "return true if a player draws and than finishes the turn " in{
+    "return true if a player draws and than finishes the turn " in {
       controller.hasDrawn = true
-      controller.tilesMovedFromRacktoGrid = Nil
-      var pass = controller.isValid()
-      pass should be (true)
+      controller.tilesMovedFromRackToGrid = Nil
+      var pass = controller.playerCanFinish()
+      pass should be(true)
     }
 
     "return false if a player tries to skip their turn" in {
       controller.hasDrawn = false
-      controller.tilesMovedFromRacktoGrid = Nil
-      var noMove = controller.isValid()
-      noMove should be (false)
-      controller.statusMessage should be("Du musst ziehen oder Steine legen...")
+      controller.tilesMovedFromRackToGrid = Nil
+      var noMove = controller.playerCanFinish()
+      noMove should be(false)
     }
 
     "a player shouldn't be allowed to draw 2 tiles" in {
       controller.hasDrawn = false
       controller.draw()
-      controller.hasDrawn should be (true)
+      controller.hasDrawn should be(true)
       controller.draw()
-      controller.statusMessage should be ("Du darfst nur einmal ziehen, du Papnase.")
+      controller.statusMessage should be("You can draw only once.")
     }
 
     "also a player shouldn't be allowed to draw if he already played tiles. " in {
       controller.hasDrawn = false
-      controller.tilesMovedFromRacktoGrid = g10 :: g11 :: g12 :: Nil
+      controller.tilesMovedFromRackToGrid = g10 :: g11 :: g12 :: Nil
       controller.draw()
-      controller.statusMessage should be ("Du host scho glegt, du Zipfelklatscher.")
+      controller.statusMessage should be("You have already placed a stone on the field.")
     }
   }
 
-  "After a Move is made it should be the next players turn " should{
+  "After a Move is made it should be the next players turn " should {
     "change player " in {
       controller.hasDrawn = true
-      controller.tilesMovedFromRacktoGrid = Nil
+      controller.tilesMovedFromRackToGrid = Nil
       controller.switchPlayer()
-      controller.getActivePlayer should be (Player("julian"))
+      controller.activePlayer should be(Player("julian"))
     }
   }
 
@@ -98,22 +101,55 @@ class ControllerSpec extends WordSpec with Matchers {
     val playingfieldSet2 = new RummiSet(list2)
     val playingfieldSet3 = new RummiSet(list3)
 
-    "return false if there are wrong sets " in{
-      controller.playingfield.sets = List(playingfieldSet1, playingfieldSet2)
-      val wrongMove = controller.isValid()
-      wrongMove should be (false)
-      controller.statusMessage should be ("Dein Spielfeld hat fehler, du Pisser!")
+    "return false if there are wrong sets " in {
+      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g8) +
+          ((1, 3) -> g13))
+
+      val wrongMove = controller.playerCanFinish()
+      wrongMove should be(false)
     }
 
     "return true if multiple sets are correct " in {
-      controller.playingfield.sets = List(playingfieldSet1, playingfieldSet3)
-      val correctMove = controller.isValid()
-      correctMove should be (false)
+      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g12) +
+          ((1, 3) -> g13) +
+
+          ((3, 1) -> g8) +
+          ((3, 2) -> g9) +
+          ((3, 3) -> g10)
+      )
+      val correctMove = controller.playerCanFinish()
+      correctMove should be(false)
     }
   }
 
   "Players can move Tiles " should {
     "either from their rack to the grid " in {
+      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g12) +
+          ((1, 3) -> g13) +
+
+          ((3, 1) -> g8) +
+          ((3, 2) -> g9) +
+          ((3, 3) -> g10)
+      )
+
+      val listOfSets = controller.extractSets(controller.field)
+      listOfSets.size should be(2)
+      listOfSets(1).tiles(0) should be(g11)
+      listOfSets(1).tiles(1) should be(g12)
+      listOfSets(1).tiles(2) should be(g13)
+
+      listOfSets(0).tiles(0) should be(g8)
+      listOfSets(0).tiles(1) should be(g9)
+      listOfSets(0).tiles(2) should be(g10)
 
     }
   }

@@ -1,22 +1,16 @@
 package de.htwg.se.rummi.aview
 
-import de.htwg.se.rummi.aview.swing.{Field, Grid, Rack, RackSortMode}
-import de.htwg.se.rummi.controller.{Controller, FieldChangedEvent, PlayerSwitchedEvent, RackChangedEvent, StatusMessageChangedEvent, ValidStateChangedEvent, WinEvent}
-import de.htwg.se.rummi.model.{Ending, RummiSet, Tile}
+import de.htwg.se.rummi.Const
+import de.htwg.se.rummi.controller.{Controller, FieldChangedEvent, PlayerSwitchedEvent, StatusMessageChangedEvent, ValidStateChangedEvent, WinEvent}
+import de.htwg.se.rummi.model.Grid
 
 import scala.swing.Reactor
 
 class Tui(controller: Controller) extends Reactor {
 
-  val ROWS: Int = 8
-  val COLS: Int = 13
-
-  val grid = new Grid(8, 13, controller)
-  val rack = new Rack(4, 13)
-
 
   listenTo(controller)
-  rack.loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
+
 
   def processInputLine(input: String): Unit = {
     input match {
@@ -28,32 +22,28 @@ class Tui(controller: Controller) extends Reactor {
       case "s" => //controller.solve
       case "f" => //controller.save
       case "l" => //controller.load
+      case "sort" => controller.sortRack()
+      case "finish" => controller.switchPlayer()
+      case "draw" => controller.draw()
       case _ => input.split(" ").toList match {
-        case from :: _ :: to :: Nil => {
-
-          val x = coordsToFields(from, to) match {
-            case Some(x) => moveTile(x._1, x._2, x._3)
-            case _ => println("TUI: Invalid input")
-          }
-        }
-        case _ =>
+        case from :: _ :: to :: Nil => moveTile(from, to)
+        case _ => println("Can not parse input.")
       }
     }
   }
 
   def printTui: Unit = {
-    println("TUI: Current Player: " + controller.getActivePlayer.name)
     print("\n   ")
-    print(('A' to ('A' + COLS - 1).toChar).mkString("  ", "  ", "\n"))
+    print(('A' to ('A' + Const.GRID_COLS - 1).toChar).mkString("  ", "  ", "\n"))
 
     var i = 1
-    val gridStrings = printGrid.map(x => {
+    val gridStrings = printGrid(controller.field, Const.GRID_ROWS).map(x => {
       val s = f"$i%2d" + "|" + x
       i += 1
       s
     })
 
-    val rackStrings = printRack.map(x => {
+    val rackStrings = printGrid(controller.getRack(controller.activePlayer), Const.RACK_ROWS).map(x => {
       val s = f"$i%2d" + "|" + x
       i += 1
       s
@@ -63,63 +53,46 @@ class Tui(controller: Controller) extends Reactor {
   }
 
   reactions += {
-    case event: RackChangedEvent => {
-      println("TUI: RackChangedEvent")
-      rack.loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
-      printTui
-    }
-
     case event: FieldChangedEvent => {
-      println("TUI: FieldChangedEvent")
-      grid.update(controller.getPlayingField)
       printTui
+      println(controller.extractSets(controller.field)
+        .map(s => s.tiles
+          .map(t => t.toString)
+          .mkString("[", ", ", " " + (s.isValidGroup() || s.isValidRun()).toString + " ]"))
+        .mkString("Sets: ", "\n", "")
+      )
     }
 
     case event: ValidStateChangedEvent => {
-      println("TUI: ValidStateChangedEvent")
+      if (controller.isValidField) {
+        println("TUI: Field is valid again.")
+      } else {
+        println("TUI: Field is not valid anymore.")
+      }
     }
 
     case event: PlayerSwitchedEvent => {
-      println("TUI: --- PlayerSwitchedEvent ---")
-      println("TUI: Current Player: " + controller.getActivePlayer.name)
-      rack.loadRack(controller.getRack(controller.getActivePlayer).sortBy(x => (x.color, x.number)))
+      println("TUI: It's " + controller.activePlayer.name + "'s turn.")
       printTui
     }
 
     case event: WinEvent => {
-      grid.enabled = false
+      // TODO: Implement
     }
 
     case event: StatusMessageChangedEvent => {
-      println("TUI: Status: " + controller.statusMessage)
+      if (!controller.statusMessage.isEmpty)
+        println("TUI: Status: " + controller.statusMessage)
     }
   }
 
-  def printGrid: List[String] = {
+  def printGrid(grid: Grid, amountRows: Int): List[String] = {
 
     var rows: List[String] = Nil
-
-    for (r <- 1 to grid.ROWS) {
-      val fieldsInRow = grid.fields.filter(f => f.row == r)
+    for (i <- 1 to amountRows) {
       var row = ""
-      for (c <- 1 to grid.COLS) {
-        row += " " + (fieldsInRow.find(f => f.col == c).get.tileOpt match {
-          case Some(t) => if (t.number < 10) " " + t.toString else t.toString
-          case None => " _"
-        })
-      }
-      rows = rows :+ row
-    }
-    rows
-  }
-
-  def printRack: List[String] = {
-    var rows: List[String] = Nil
-    for (r <- 1 to rack.ROWS) {
-      val fieldsInRow = rack.fields.filter(f => f.row == r)
-      var row = ""
-      for (c <- 1 to rack.COLS) {
-        row += " " + (fieldsInRow.find(f => f.col == c).get.tileOpt match {
+      for (j <- 1 to Const.GRID_COLS) {
+        row += " " + (grid.getTileAt(i, j) match {
           case Some(t) => if (t.number < 10) {
             " " + t.toString
           } else {
@@ -133,15 +106,48 @@ class Tui(controller: Controller) extends Reactor {
     rows
   }
 
-  def coordsToFields(from: String, to: String): Option[(Field, Field, Tile)] = {
+  def moveTile(from: String, to: String): Unit = {
+    val (f, t) = coordsToFields(from, to).getOrElse(throw new NoSuchElementException("No such field."))
+
+    if (f._1 <= Const.GRID_ROWS) {
+      val tile = controller.field.getTileAt(f._1, f._2).
+        getOrElse({
+          println("There is no tile on field " + from)
+          return
+        })
+      if (t._1 <= Const.GRID_ROWS) {
+        controller.moveTileWithinField(tile, t._1, t._2)
+      } else {
+        controller.moveTileFromFieldToRack(tile, t._1 - Const.GRID_ROWS, t._2)
+      }
+    } else {
+      val tile = controller.getRack(controller.activePlayer).getTileAt(f._1 - Const.GRID_ROWS, f._2).
+        getOrElse({
+          println("There is no tile on field " + from)
+          return
+        })
+      if (t._1 <= Const.GRID_ROWS) {
+        controller.moveTileFromRackToField(tile, t._1, t._2)
+      } else {
+        controller.moveTileWithinRack(tile, t._1 - Const.GRID_ROWS, t._2)
+      }
+    }
+  }
+
+  def toColNumber(col: Char): Option[Int] = {
+    val ret = col - 65
+    if (ret >= 0 && ret <= Const.GRID_COLS) {
+      return Some(ret + 1)
+    }
+    None
+  }
+
+  def coordsToFields(from: String, to: String): Option[((Int, Int), (Int, Int))] = {
     val fromChars = from.toList
     val toChars = to.toList
 
-    var toRow: Int = toChars.filter(x => x.isDigit).mkString("").toInt
-    var fromRow: Int = fromChars.filter(x => x.isDigit).mkString("").toInt
-
-    var toField: Field = null
-    var fromField: Field = null
+    val toRow: Int = toChars.filter(x => x.isDigit).mkString("").toInt
+    val fromRow: Int = fromChars.filter(x => x.isDigit).mkString("").toInt
 
     val fromCol: Int = toColNumber(fromChars(0).charValue()) match {
       case Some(c) => c
@@ -149,50 +155,12 @@ class Tui(controller: Controller) extends Reactor {
         return None
       }
     }
-
     val toCol: Int = toColNumber(toChars(0).charValue()) match {
       case Some(c) => c
       case None =>
         return None
     }
-
-    if (fromRow > grid.ROWS) {
-      fromRow = fromRow - grid.ROWS
-      printRack
-      fromField = rack.fields.find(x => x.row == fromRow && x.col == fromCol).getOrElse(return None)
-    } else {
-      fromField = grid.fields.find(x => x.row == fromRow && x.col == fromCol).getOrElse(return None)
-    }
-
-    if (toRow > grid.ROWS) {
-      toRow = toRow - grid.ROWS
-      toField = rack.fields.find(x => x.row == toRow && x.col == toCol).getOrElse(return None)
-    } else {
-      toField = grid.fields.find(x => x.row == toRow && x.col == toCol).getOrElse(return None)
-    }
-
-    fromField.tileOpt match {
-      case Some(tile) => Some((fromField, toField, tile))
-      case None => None
-    }
-  }
-
-  def toColNumber(col: Char): Option[Int] = {
-    val ret = col - 65
-    if (ret >= 0 && ret <= COLS) {
-      return Some(ret + 1)
-    }
-    None
-  }
-
-
-  def moveTile(fieldFrom: Field, fieldTo: Field, selectedTile: Tile): Unit = {
-
-    if (rack.fields.contains(fieldTo)) {
-      controller.moveTileToRack(selectedTile)
-    } else {
-      grid.moveTile(fieldTo, fieldFrom, selectedTile)
-    }
+    Some((fromRow, fromCol), (toRow, toCol))
   }
 
 }

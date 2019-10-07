@@ -17,7 +17,7 @@ object Rummi {
 
     println()
 
-    var playerNames: List[String] = null
+    var playerNames: List[String] = Nil
 
     if (args.size > 0) {
       // Read player names from program arguments

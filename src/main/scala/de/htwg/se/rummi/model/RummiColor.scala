@@ -28,5 +28,7 @@ object RummiColor{
   case object BLUE extends Color("BLUE", "\u001B[34m")
   case object YELLOW extends Color("YELLOW", "\u001B[33m")
   case object GREEN extends Color("GREEN", "\u001B[32m")
+  case object WHITE extends Color("WHITE", "\u001B[37m")
+
 
 }
