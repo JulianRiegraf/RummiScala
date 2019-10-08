@@ -55,12 +55,13 @@ class Tui(controller: Controller) extends Reactor {
   reactions += {
     case event: FieldChangedEvent => {
       printTui
-      println(controller.extractSets(controller.field)
-        .map(s => s.tiles
-          .map(t => t.toString)
-          .mkString("[", ", ", " " + (s.isValidGroup() || s.isValidRun()).toString + " ]"))
-        .mkString("Sets: ", "\n", "")
-      )
+      // debug log
+//      println(controller.extractSets(controller.field)
+//        .map(s => s.tiles
+//          .map(t => t.toString)
+//          .mkString("[", ", ", " " + (s.isValidGroup() || s.isValidRun()).toString + " ]"))
+//        .mkString("Sets: ", "\n", "")
+//      )
     }
 
     case event: ValidStateChangedEvent => {
