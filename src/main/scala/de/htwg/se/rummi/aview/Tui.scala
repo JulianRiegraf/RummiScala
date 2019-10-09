@@ -1,15 +1,15 @@
 package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.controller.{Controller, FieldChangedEvent, PlayerSwitchedEvent, StatusMessageChangedEvent, ValidStateChangedEvent, WinEvent}
+import de.htwg.se.rummi.controller.{Controller, FieldChangedEvent, GameState, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
 import de.htwg.se.rummi.model.Grid
 
 import scala.swing.Reactor
 
-class Tui(controller: Controller) extends Reactor {
+class Tui(co: Controller) extends Reactor {
 
 
-  listenTo(controller)
+  listenTo(co)
 
 
   def processInputLine(input: String): Unit = {
@@ -22,9 +22,9 @@ class Tui(controller: Controller) extends Reactor {
       case "s" => //controller.solve
       case "f" => //controller.save
       case "l" => //controller.load
-      case "sort" => controller.sortRack()
-      case "finish" => controller.switchPlayer()
-      case "draw" => controller.draw()
+      case "sort" => co.sortRack()
+      case "finish" => co.switchPlayer()
+      case "draw" => co.draw()
       case _ => input.split(" ").toList match {
         case from :: _ :: to :: Nil => moveTile(from, to)
         case _ => println("Can not parse input.")
@@ -37,13 +37,13 @@ class Tui(controller: Controller) extends Reactor {
     print(('A' to ('A' + Const.GRID_COLS - 1).toChar).mkString("  ", "  ", "\n"))
 
     var i = 1
-    val gridStrings = printGrid(controller.field, Const.GRID_ROWS).map(x => {
+    val gridStrings = printGrid(co.field, Const.GRID_ROWS).map(x => {
       val s = f"$i%2d" + "|" + x
       i += 1
       s
     })
 
-    val rackStrings = printGrid(controller.getRack(controller.activePlayer), Const.RACK_ROWS).map(x => {
+    val rackStrings = printGrid(co.rackOfActivePlayer, Const.RACK_ROWS).map(x => {
       val s = f"$i%2d" + "|" + x
       i += 1
       s
@@ -65,7 +65,7 @@ class Tui(controller: Controller) extends Reactor {
     }
 
     case event: ValidStateChangedEvent => {
-      if (controller.isValidField) {
+      if (co.isValidField) {
         println("TUI: Field is valid again.")
       } else {
         println("TUI: Field is not valid anymore.")
@@ -73,17 +73,17 @@ class Tui(controller: Controller) extends Reactor {
     }
 
     case event: PlayerSwitchedEvent => {
-      println("TUI: It's " + controller.activePlayer.name + "'s turn.")
+      println("It's " + co.activePlayer.name + "'s turn.")
       printTui
     }
 
-    case event: WinEvent => {
-      // TODO: Implement
-    }
-
-    case event: StatusMessageChangedEvent => {
-      if (!controller.statusMessage.isEmpty)
-        println("TUI: Status: " + controller.statusMessage)
+    case event: GameStateChanged => {
+      co.getGameState match {
+        case GameState.WON => {
+          println(("---- " + co.activePlayer + " wins! ----").toUpperCase)
+        }
+        case _ =>
+      }
     }
   }
 
@@ -111,26 +111,26 @@ class Tui(controller: Controller) extends Reactor {
     val (f, t) = coordsToFields(from, to).getOrElse(throw new NoSuchElementException("No such field."))
 
     if (f._1 <= Const.GRID_ROWS) {
-      val tile = controller.field.getTileAt(f._1, f._2).
+      val tile = co.field.getTileAt(f._1, f._2).
         getOrElse({
           println("There is no tile on field " + from)
           return
         })
       if (t._1 <= Const.GRID_ROWS) {
-        controller.moveTileWithinField(tile, t._1, t._2)
+        co.moveTile(co.field, co.field, tile, t._1, t._2)
       } else {
-        controller.moveTileFromFieldToRack(tile, t._1 - Const.GRID_ROWS, t._2)
+        co.moveTile(co.field, co.rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
       }
     } else {
-      val tile = controller.getRack(controller.activePlayer).getTileAt(f._1 - Const.GRID_ROWS, f._2).
+      val tile = co.rackOfActivePlayer.getTileAt(f._1 - Const.GRID_ROWS, f._2).
         getOrElse({
           println("There is no tile on field " + from)
           return
         })
       if (t._1 <= Const.GRID_ROWS) {
-        controller.moveTileFromRackToField(tile, t._1, t._2)
+        co.moveTile(co.rackOfActivePlayer, co.field, tile, t._1, t._2)
       } else {
-        controller.moveTileWithinRack(tile, t._1 - Const.GRID_ROWS, t._2)
+        co.moveTile(co.rackOfActivePlayer, co.rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
       }
     }
   }

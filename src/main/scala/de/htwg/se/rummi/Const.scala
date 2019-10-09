@@ -3,6 +3,10 @@ package de.htwg.se.rummi
 object Const {
   val MINIMUM_POINTS_FIRST_ROUND = 30
 
+  val number_of_number_tiles = 104
+  val number_of_joker_tiles = 2
+  val lowest_number = 1
+  val highest_number = 13
 
   val RACK_ROWS: Int = 4
   val  RACK_COLS: Int = 13

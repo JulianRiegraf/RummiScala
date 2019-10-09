@@ -22,11 +22,8 @@ class ControllerSpec extends WordSpec with Matchers {
 
   "When the game starts a new Game " should {
     "be initiated " in {
-      controller.statusMessage should be("")
-      controller.hasDrawn should be(false)
       controller.currentSets should be(Nil)
       controller.tilesMovedFromRackToGrid should be(Nil)
-      controller.firstMoveList should be(controller.players)
     }
 
     "and should tell you who the first active Player is " in {
@@ -36,8 +33,7 @@ class ControllerSpec extends WordSpec with Matchers {
 
   "The first play is either to draw a card or to play 30+ valid points " should {
     "return false and publish a statusmessage if there are 29 or less pts played" in {
-      val noMove = controller.playerCanFinish()
-      noMove should be(false)
+
     }
 
     "return true if there are 30 or more valid points played " in {
@@ -50,43 +46,28 @@ class ControllerSpec extends WordSpec with Matchers {
 
       controller.tilesMovedFromRackToGrid = list
 
-      val correctMove = controller.playerCanFinish()
+      val correctMove = controller.playerReachedMinLayOutPoints()
       correctMove should be(true)
     }
 
     "return true if a player draws and than finishes the turn " in {
-      controller.hasDrawn = true
-      controller.tilesMovedFromRackToGrid = Nil
-      var pass = controller.playerCanFinish()
-      pass should be(true)
+
     }
 
     "return false if a player tries to skip their turn" in {
-      controller.hasDrawn = false
-      controller.tilesMovedFromRackToGrid = Nil
-      var noMove = controller.playerCanFinish()
-      noMove should be(false)
+
     }
 
     "a player shouldn't be allowed to draw 2 tiles" in {
-      controller.hasDrawn = false
-      controller.draw()
-      controller.hasDrawn should be(true)
-      controller.draw()
-      controller.statusMessage should be("You can draw only once.")
+
     }
 
-    "also a player shouldn't be allowed to draw if he already played tiles. " in {
-      controller.hasDrawn = false
-      controller.tilesMovedFromRackToGrid = g10 :: g11 :: g12 :: Nil
-      controller.draw()
-      controller.statusMessage should be("You have already placed a stone on the field.")
-    }
+
   }
 
   "After a Move is made it should be the next players turn " should {
     "change player " in {
-      controller.hasDrawn = true
+      controller.setGameState(GameState.DRAWN)
       controller.tilesMovedFromRackToGrid = Nil
       controller.switchPlayer()
       controller.activePlayer should be(Player("julian"))
@@ -108,8 +89,8 @@ class ControllerSpec extends WordSpec with Matchers {
           ((1, 2) -> g8) +
           ((1, 3) -> g13))
 
-      val wrongMove = controller.playerCanFinish()
-      wrongMove should be(false)
+      val correctMove = controller.isValidField
+      correctMove should be(false)
     }
 
     "return true if multiple sets are correct " in {
@@ -123,8 +104,8 @@ class ControllerSpec extends WordSpec with Matchers {
           ((3, 2) -> g9) +
           ((3, 3) -> g10)
       )
-      val correctMove = controller.playerCanFinish()
-      correctMove should be(false)
+      val correctMove = controller.isValidField
+      correctMove should be(true)
     }
   }
 
