@@ -31,7 +31,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   }
 
   def field: Grid = {
-    playingfield.grid
+    playingfield.field
   }
 
   def initGame() = {
@@ -89,7 +89,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
   }
 
-  def setGrid(newGrid: Grid) = playingfield.grid = newGrid
+  def setField(newGrid: Grid) = playingfield.field = newGrid
 
   def setRack(newRack: Grid) = {
     playingfield.racks = playingfield.racks + (activePlayer -> newRack)
@@ -205,17 +205,17 @@ class Controller(playerNames: List[String]) extends Publisher {
 
     if ((gridFrom eq field) && (gridTo eq getRack(activePlayer))) {
       setRack(t)
-      setGrid(f)
+      setField(f)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid.filter(x => x != tile)
     }
 
     if ((gridFrom eq field) && (gridTo eq field)) {
-      setGrid(f)
+      setField(f)
     }
 
     if ((gridFrom eq getRack(activePlayer)) && (gridTo eq field)) {
       setRack(f)
-      setGrid(t)
+      setField(t)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid :+ tile
     }
 

@@ -13,12 +13,12 @@ case class Playingfield() {
   var coveredTiles: List[Tile] = Nil
 
   // Alle Groups oder Runs, die auf dem Spielfeld liegen
-  var grid: Grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
+  var field: Grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
 
 
   def generateNewGame(players: List[Player]): Unit = {
 
-    grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
+    field = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
     coveredTiles = Nil
     racks = Map.empty
 

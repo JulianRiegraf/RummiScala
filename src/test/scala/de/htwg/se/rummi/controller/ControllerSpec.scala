@@ -38,11 +38,12 @@ class ControllerSpec extends WordSpec with Matchers {
 
     "return true if there are 30 or more valid points played " in {
       val list = g11 :: g12 :: g13 :: Nil
-      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g12) +
           ((1, 3) -> g13))
+      )
 
       controller.tilesMovedFromRackToGrid = list
 
@@ -83,27 +84,31 @@ class ControllerSpec extends WordSpec with Matchers {
     val playingfieldSet3 = new RummiSet(list3)
 
     "return false if there are wrong sets " in {
-      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g8) +
           ((1, 3) -> g13))
+      )
 
       val correctMove = controller.isValidField
       correctMove should be(false)
     }
 
     "return true if multiple sets are correct " in {
-      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty + ((1, 1) -> g10)))
+      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g12) +
           ((1, 3) -> g13) +
 
           ((3, 1) -> g8) +
-          ((3, 2) -> g9) +
-          ((3, 3) -> g10)
-      )
+          ((3, 2) -> g9)
+      ))
+
+      controller.moveTile(controller.rackOfActivePlayer, controller.field, g10, 3, 3)
       val correctMove = controller.isValidField
       correctMove should be(true)
     }
@@ -111,7 +116,7 @@ class ControllerSpec extends WordSpec with Matchers {
 
   "Players can move Tiles " should {
     "either from their rack to the grid " in {
-      controller.playingfield.grid = Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g12) +
@@ -119,7 +124,7 @@ class ControllerSpec extends WordSpec with Matchers {
 
           ((3, 1) -> g8) +
           ((3, 2) -> g9) +
-          ((3, 3) -> g10)
+          ((3, 3) -> g10))
       )
 
       val listOfSets = controller.extractSets(controller.field)
