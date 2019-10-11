@@ -3,7 +3,7 @@ package de.htwg.se.rummi.model
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.model.RummiColor.{BLUE, GREEN, RED, WHITE, YELLOW}
 
-case class Playingfield() {
+case class Game() {
 
 
   // Jeder Spieler bewahrt seine Steine in seinem Rack auf

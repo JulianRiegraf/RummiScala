@@ -16,7 +16,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
 
-  val playingfield = Playingfield()
+  val game = Game()
   val players = playerNames.map(x => Player(x))
   var isValidField = false
   private var activePlayerIndex: Int = 0
@@ -31,7 +31,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   }
 
   def field: Grid = {
-    playingfield.field
+    game.field
   }
 
   def initGame() = {
@@ -40,7 +40,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     tilesMovedFromRackToGrid = Nil
     activePlayerIndex = 0
 
-    playingfield.generateNewGame(players)
+    game.generateNewGame(players)
     players.foreach(p => {
       p.inFirstRound = true
       p.points = 0
@@ -80,7 +80,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   def rackOfActivePlayer: Grid = getRack(activePlayer)
 
   def getRack(player: Player): Grid = {
-    playingfield.racks.find(x => x._1 == player) match {
+    game.racks.find(x => x._1 == player) match {
       case Some(t) => t._2
       case None => {
         println("No Rack of " + player.name)
@@ -89,10 +89,10 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
   }
 
-  def setField(newGrid: Grid) = playingfield.field = newGrid
+  def setField(newGrid: Grid) = game.field = newGrid
 
   def setRack(newRack: Grid) = {
-    playingfield.racks = playingfield.racks + (activePlayer -> newRack)
+    game.racks = game.racks + (activePlayer -> newRack)
   }
 
   /**
@@ -161,11 +161,11 @@ class Controller(playerNames: List[String]) extends Publisher {
       return
     }
 
-    val newTile = playingfield.coveredTiles.head
-    playingfield.coveredTiles = playingfield.coveredTiles.filter(x => x != newTile)
+    val newTile = game.coveredTiles.head
+    game.coveredTiles = game.coveredTiles.filter(x => x != newTile)
 
     // get the current rack from the player
-    val oldRack = playingfield.racks.find(x => x._1 == activePlayer) match {
+    val oldRack = game.racks.find(x => x._1 == activePlayer) match {
       case Some(r) => r._2
       case None => throw new NoSuchElementException("No rack for player '" + activePlayer + "'.")
     }
