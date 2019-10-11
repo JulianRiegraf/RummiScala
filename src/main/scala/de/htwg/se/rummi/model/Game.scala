@@ -3,7 +3,11 @@ package de.htwg.se.rummi.model
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.model.RummiColor.{BLUE, GREEN, RED, WHITE, YELLOW}
 
-case class Game() {
+case class Game(playerNames: List[String]) {
+
+
+  val players = playerNames.map(x => Player(x))
+  private var activePlayerIndex: Int = 0
 
 
   // Jeder Spieler bewahrt seine Steine in seinem Rack auf
@@ -15,8 +19,23 @@ case class Game() {
   // Alle Groups oder Runs, die auf dem Spielfeld liegen
   var field: Grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
 
+  def activePlayer = {
+    players(activePlayerIndex)
+  }
+
+  def nextPlayer(): Unit ={
+    activePlayerIndex += 1
+    if (activePlayerIndex >= players.size) {
+      activePlayerIndex = 0
+    }
+  }
 
   def generateNewGame(players: List[Player]): Unit = {
+
+    players.foreach(p => {
+      p.inFirstRound = true
+      p.points = 0
+    })
 
     field = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
     coveredTiles = Nil
