@@ -2,7 +2,7 @@ package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.{Controller, FieldChangedEvent, GameState, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
-import de.htwg.se.rummi.model.Grid
+import de.htwg.se.rummi.model.{Grid, Tile}
 
 import scala.swing.Reactor
 
@@ -32,24 +32,41 @@ class Tui(co: Controller) extends Reactor {
     }
   }
 
-  def printTui: Unit = {
-    print("\n   ")
-    print(('A' to ('A' + Const.GRID_COLS - 1).toChar).mkString("  ", "  ", "\n"))
+  def gridToString(tileToString: Tile => String) : String = {
+    val sb = new StringBuilder("\n   ")
+    sb ++= ('A' to ('A' + Const.GRID_COLS - 1).toChar).mkString("  ", "  ", "\n")
 
     var i = 1
-    val gridStrings = printGrid(co.field, Const.GRID_ROWS).map(x => {
+    val fieldStrings = printGrid(co.field, Const.GRID_ROWS, tileToString).map(x => {
       val s = f"$i%2d" + "|" + x
       i += 1
       s
     })
 
-    val rackStrings = printGrid(co.rackOfActivePlayer, Const.RACK_ROWS).map(x => {
+    val rackStrings = printGrid(co.rackOfActivePlayer, Const.RACK_ROWS, tileToString).map(x => {
       val s = f"$i%2d" + "|" + x
       i += 1
       s
     })
 
-    ((gridStrings :+ "\n _________________________________________\n") ::: rackStrings).foreach(x => println(x))
+    fieldStrings.foreach(x => sb ++= x + "\n")
+    sb ++= "\n _________________________________________\n"
+    rackStrings.foreach(x => sb ++= x + "\n")
+    sb.toString()
+  }
+
+
+  def gridToHtmlString : String = {
+    val htmlColored = (x: Tile) => x.color.stringInHtmlColor(x.number.toString)
+    gridToString(htmlColored)
+      .replace("\n", "<br>")
+      .replace("  ", "&nbsp")
+      .mkString("<p style=\"font-family: Consolas; font-size: 14pt;\">", "", "</p>")
+  }
+
+  def printTui: Unit = {
+    val ansiColored = (t : Tile) => t.color.stringInColor(t.number.toString)
+    println(gridToString(ansiColored))
   }
 
   reactions += {
@@ -87,7 +104,7 @@ class Tui(co: Controller) extends Reactor {
     }
   }
 
-  def printGrid(grid: Grid, amountRows: Int): List[String] = {
+  def printGrid(grid: Grid, amountRows: Int, fx: Tile => String): List[String] = {
 
     var rows: List[String] = Nil
     for (i <- 1 to amountRows) {
@@ -95,9 +112,9 @@ class Tui(co: Controller) extends Reactor {
       for (j <- 1 to Const.GRID_COLS) {
         row += " " + (grid.getTileAt(i, j) match {
           case Some(t) => if (t.number < 10) {
-            " " + t.toString
+            " " + fx(t)
           } else {
-            t.toString
+            fx(t)
           }
           case None => " _"
         })

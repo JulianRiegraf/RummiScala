@@ -23,4 +23,12 @@ case class Tile(number: Int, color: Color, joker: Boolean) {
       color.stringInColor(number.toString)
     }
   }
+
+  def toHtmlString : String = {
+    if (joker) {
+      color.stringInHtmlColor("J")
+    } else {
+      color.stringInHtmlColor(number.toString)
+    }
+  }
 }
