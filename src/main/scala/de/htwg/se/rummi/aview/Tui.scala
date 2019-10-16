@@ -34,7 +34,7 @@ class Tui(co: Controller) extends Reactor {
 
   def gridToString(tileToString: Tile => String) : String = {
     val sb = new StringBuilder("\n   ")
-    sb ++= ('A' to ('A' + Const.GRID_COLS - 1).toChar).mkString("  ", "  ", "\n")
+    sb ++= ('A' to ('A' + Const.GRID_COLS - 1).toChar).mkString("    ", "  ", "\n")
 
     var i = 1
     val fieldStrings = printGrid(co.field, Const.GRID_ROWS, tileToString).map(x => {
