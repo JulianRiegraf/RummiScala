@@ -25,8 +25,8 @@ class Tui(co: Controller) extends Reactor {
       case "sort" => co.sortRack()
       case "finish" => co.switchPlayer()
       case "draw" => co.draw()
-      case _ => input.split(" ").toList match {
-        case from :: _ :: to :: Nil => moveTile(from, to)
+      case _ => input.split("->").toList match {
+        case from :: to :: Nil => moveTile(from, to)
         case _ => println("Can not parse input.")
       }
     }
@@ -38,19 +38,19 @@ class Tui(co: Controller) extends Reactor {
 
     var i = 1
     val fieldStrings = printGrid(co.field, Const.GRID_ROWS, tileToString).map(x => {
-      val s = f"$i%2d" + "|" + x
+      val s = f"$i%4d" + "|" + x
       i += 1
       s
     })
 
     val rackStrings = printGrid(co.rackOfActivePlayer, Const.RACK_ROWS, tileToString).map(x => {
-      val s = f"$i%2d" + "|" + x
+      val s = f"$i%4d" + "|" + x
       i += 1
       s
     })
 
     fieldStrings.foreach(x => sb ++= x + "\n")
-    sb ++= "\n _________________________________________\n"
+    sb ++= "\n      _________________________________________\n"
     rackStrings.foreach(x => sb ++= x + "\n")
     sb.toString()
   }
@@ -60,8 +60,11 @@ class Tui(co: Controller) extends Reactor {
     val htmlColored = (x: Tile) => x.color.stringInHtmlColor(x.number.toString)
     gridToString(htmlColored)
       .replace("\n", "<br>")
-      .replace("  ", "&nbsp")
-      .mkString("<p style=\"font-family: Consolas; font-size: 14pt;\">", "", "</p>")
+      .replace("   ", "&nbsp&nbsp&nbsp")
+      .replace("  ", "&nbsp&nbsp")
+      .mkString("<html><body style=\"background: lightgray; font-family: Consolas; font-size: 14pt;\"><p>"
+        , "",
+        "</p></body></html>")
   }
 
   def printTui: Unit = {
