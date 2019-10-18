@@ -55,17 +55,10 @@ class Tui(co: Controller) extends Reactor {
   reactions += {
     case event: FieldChangedEvent => {
       printTui
-      // debug log
-//      println(controller.extractSets(controller.field)
-//        .map(s => s.tiles
-//          .map(t => t.toString)
-//          .mkString("[", ", ", " " + (s.isValidGroup() || s.isValidRun()).toString + " ]"))
-//        .mkString("Sets: ", "\n", "")
-//      )
     }
 
     case event: ValidStateChangedEvent => {
-      if (co.isValidField) {
+      if (co.game.isValidField) {
         println("TUI: Field is valid again.")
       } else {
         println("TUI: Field is not valid anymore.")

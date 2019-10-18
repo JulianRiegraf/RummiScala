@@ -3,7 +3,7 @@ package de.htwg.se.rummi.model
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.model.RummiColor.{BLUE, GREEN, RED, WHITE, YELLOW}
 
-case class Playingfield() {
+case class Game(playerNames : List[String]) {
 
 
   // Jeder Spieler bewahrt seine Steine in seinem Rack auf
@@ -14,6 +14,10 @@ case class Playingfield() {
 
   // Alle Groups oder Runs, die auf dem Spielfeld liegen
   var grid: Grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
+
+  val players = playerNames.map(x => Player(x))
+  var activePlayerIndex: Int = 0
+  var isValidField = false
 
 
   def generateNewGame(players: List[Player]): Unit = {

@@ -104,7 +104,7 @@ class SwingGui(co: Controller) extends MainFrame {
     }
 
     case event: ValidStateChangedEvent => {
-      if (co.isValidField) {
+      if (co.game.isValidField) {
         finishButton.enabled = true
       } else {
         finishButton.enabled = false
