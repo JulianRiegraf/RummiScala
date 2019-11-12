@@ -1,8 +1,7 @@
 package de.htwg.se.rummi.controller
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.model.RummiColor.GREEN
-import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile}
+import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
 class ControllerSpec extends WordSpec with Matchers {
@@ -133,6 +132,23 @@ class ControllerSpec extends WordSpec with Matchers {
       listOfSets(0).tiles(1) should be(g9)
       listOfSets(0).tiles(2) should be(g10)
 
+    }
+  }
+
+  "dasda" should {
+    "adsdas" in {
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g12) +
+          ((1, 3) -> g13) +
+
+          ((3, 1) -> g8) +
+          ((3, 2) -> g9) +
+          ((3, 3) -> g10)
+      ))
+
+      print(controller.save())
     }
   }
 

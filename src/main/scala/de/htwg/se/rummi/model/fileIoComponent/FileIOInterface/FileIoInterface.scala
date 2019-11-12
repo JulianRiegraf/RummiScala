@@ -6,6 +6,6 @@ import de.htwg.se.rummi.model.gridComponent.GridInterface
 trait FileIoInterface {
 
   def load: Game
-  def save(game: Game): Unit
+  def save(game: Game) : String
 
 }

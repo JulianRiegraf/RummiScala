@@ -4,6 +4,7 @@ import java.util.NoSuchElementException
 
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState.GameState
+import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 
 import scala.swing.Publisher
@@ -15,9 +16,13 @@ class Controller(playerNames: List[String]) extends Publisher {
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
+  val fileIO = new JsonFileIo()
 
   val game = Game(playerNames)
 
+  def save(): Unit ={
+    fileIO.save(game)
+  }
 
   def getGameState: GameState = {
     gameState
@@ -260,7 +265,7 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   private def sortRack(rack: Grid): Grid = {
     var tilesByColor = rack.tiles.map(x => x._2)
-      .groupBy(x => x.color)
+      .groupBy(x => x.colour)
     while (tilesByColor.size > Const.RACK_ROWS) {
       // combine colors if there are to many
       val keyOfFirstElement = tilesByColor.keys.toList(0)

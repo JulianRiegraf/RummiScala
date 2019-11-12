@@ -6,5 +6,5 @@ import de.htwg.se.sudoku.model.fileIoComponent.FileIoInterface
 class XmlFileIo extends FileIoInterface{
   override def load: Game = ???
 
-  override def save(game: Game): Unit = ???
+  override def save(game: Game): String = ???
 }

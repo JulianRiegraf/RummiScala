@@ -1,12 +1,19 @@
 package de.htwg.se.rummi.model
 
-import de.htwg.se.rummi.model.RummiColor.Color
+import play.api.libs.json._
 
-import scala.runtime.ScalaRunTime
+case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
 
-case class Tile(number: Int, color: Color, joker: Boolean) {
+  def toJson: JsObject = {
+    Json.obj(
+      "number" -> JsNumber(number),
+      "color" -> JsString(colour.name),
+      "joker" -> JsBoolean(joker)
+    )
+  }
 
-  def this(number: Int, color: Color) = this(number, color, false)
+
+  def this(number: Int, color: RummiColour) = this(number, color, false)
 
 
   override def equals(that: Any): Boolean = {
@@ -16,11 +23,22 @@ case class Tile(number: Int, color: Color, joker: Boolean) {
     }
   }
 
-  override def toString : String = {
+  override def toString: String = {
     if (joker) {
-      color.stringInColor("J")
+      colour.stringInColor("J")
     } else {
-      color.stringInColor(number.toString)
+      colour.stringInColor(number.toString)
     }
   }
 }
+
+object Tile {
+
+  import play.api.libs.json._
+
+  implicit val tileWrites = new Writes[Tile] {
+    override def writes(o: Tile): JsValue = o.toJson
+  }
+  implicit val tileReads = Json.reads[Tile]
+}
+

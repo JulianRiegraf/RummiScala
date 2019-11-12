@@ -29,3 +29,34 @@ case class Grid(ROWS: Int, COLS: Int, tiles: Map[(Int, Int), Tile]) {
   def size(): Int = tiles.size
 
 }
+
+object Grid {
+  import play.api.libs.json._
+
+  implicit val mapWrites: Writes[Grid] = new Writes[Grid] {
+    override def writes(o: Grid): JsValue = Json.obj(
+      "grid" -> Json.obj(
+        "COLS" -> JsNumber(o.COLS),
+        "ROWS" -> JsNumber(o.ROWS),
+        "tiles" -> tilesMapToJson(o.tiles)
+      )
+    )
+  }
+
+
+  def tilesMapToJson(map : Map[(Int, Int), Tile]): JsArray ={
+    JsArray(map.toList.map(mapTupleToJson))
+  }
+
+  def mapTupleToJson(tuple: ((Int, Int), Tile)): JsObject ={
+    val x = tuple._1._1
+    val y = tuple._1._1
+    val t = tuple._2
+    Json.obj(
+      "x" -> JsNumber(x),
+      "y" -> JsNumber(y),
+    "tile" -> t.toJson
+    )
+  }
+
+}

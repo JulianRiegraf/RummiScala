@@ -8,16 +8,17 @@ import play.api.libs.json.{JsValue, Json}
 class JsonFileIo extends FileIoInterface {
   override def load: Game = ???
 
-  override def save(grid: Game): Unit = {
+  override def save(grid: Game): String = {
     import java.io._
     val pw = new PrintWriter(new File("grid.json"))
-    pw.write(Json.prettyPrint(gameToJson(grid)))
+    val json = Json.prettyPrint(gameToJson(grid))
+    pw.write(json)
     pw.close
+    json
   }
 
   def gameToJson(game: Game): JsValue = {
-    // TODO: implement serialization
-    Json.obj()
+    game.toJson
   }
 
 

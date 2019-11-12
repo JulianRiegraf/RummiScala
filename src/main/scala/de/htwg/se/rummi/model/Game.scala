@@ -1,7 +1,8 @@
 package de.htwg.se.rummi.model
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.model.RummiColor.{BLUE, GREEN, RED, WHITE, YELLOW}
+import de.htwg.se.rummi.model._
+import play.api.libs.json.{JsArray, JsObject, JsString, JsValue, Json}
 
 case class Game(playerNames : List[String]) {
 
@@ -61,5 +62,11 @@ case class Game(playerNames : List[String]) {
       }
       racks = racks + (p -> Grid(Const.RACK_ROWS, Const.RACK_COLS, map))
     }
+  }
+
+  def toJson : JsValue = {
+    Json.obj(
+      "players" -> JsArray(playerNames.map(JsString))
+    )
   }
 }
