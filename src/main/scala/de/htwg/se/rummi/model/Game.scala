@@ -84,7 +84,10 @@ object Game {
       Json.obj(
         "players" -> JsArray(o.players.map(p => p.toJson)),
         "racks" -> o.racksToJson(),
-        "field" -> o.grid
+        "field" -> o.grid,
+        "activePlayerIndex" -> o.activePlayerIndex,
+        "isValidField" -> o.isValidField,
+        "coveredTiles" -> o.coveredTiles
       )
     }
   }

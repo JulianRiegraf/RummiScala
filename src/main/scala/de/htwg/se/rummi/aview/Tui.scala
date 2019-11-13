@@ -19,7 +19,7 @@ class Tui(co: Controller) extends Reactor {
       case "n" => //controller.createNewGrid
       case "z" => //controller.undo
       case "y" => //controller.redo
-      case "save" => println(co.save())
+      case "save" => co.save()
       case "f" => //controller.save
       case "l" => //controller.load
       case "sort" => co.sortRack()
