@@ -18,7 +18,7 @@ class JsonFileIo extends FileIoInterface {
   }
 
   def gameToJson(game: Game): JsValue = {
-    game.toJson
+    Json.toJson(game)
   }
 
 

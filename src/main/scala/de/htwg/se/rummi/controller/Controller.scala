@@ -20,7 +20,7 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   val game = Game(playerNames)
 
-  def save(): Unit ={
+  def save(): String ={
     fileIO.save(game)
   }
 

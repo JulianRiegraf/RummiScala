@@ -1,10 +1,9 @@
 package de.htwg.se.rummi.model
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.model._
-import play.api.libs.json.{JsArray, JsObject, JsString, JsValue, Json}
+import play.api.libs.json.{JsArray, JsObject, JsValue, Json, Writes}
 
-case class Game(playerNames : List[String]) {
+case class Game(playerNames: List[String]) {
 
 
   // Jeder Spieler bewahrt seine Steine in seinem Rack auf
@@ -64,9 +63,30 @@ case class Game(playerNames : List[String]) {
     }
   }
 
-  def toJson : JsValue = {
-    Json.obj(
-      "players" -> JsArray(playerNames.map(JsString))
+  def racksToJson(): JsArray = {
+    JsArray(
+      racks.toList.map(tuple => {
+        Json.obj(
+          "player" -> tuple._1.name,
+          "grid" -> tuple._2
+        )
+      })
     )
   }
+}
+
+object Game {
+
+  import play.api.libs.json.Json
+
+  implicit val gameWrites = new Writes[Game] {
+    override def writes(o: Game): JsValue = {
+      Json.obj(
+        "players" -> JsArray(o.players.map(p => p.toJson)),
+        "racks" -> o.racksToJson(),
+        "field" -> o.grid
+      )
+    }
+  }
+  implicit val gameReads = Json.reads[Game]
 }
