@@ -1,3 +1,4 @@
+package de.htwg.se.rummi
 
 import de.htwg.se.rummi.aview.Tui
 import de.htwg.se.rummi.aview.swing.SwingGui

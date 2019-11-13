@@ -286,6 +286,63 @@ class Controller(playerNames: List[String]) extends Publisher {
     })
     Grid(Const.RACK_ROWS, Const.RACK_COLS, newMap)
   }
+
+  def moveTile(from: String, to: String): Unit = {
+    val (f, t) = coordsToFields(from, to).getOrElse(throw new NoSuchElementException("No such field."))
+
+    if (f._1 <= Const.GRID_ROWS) {
+      val tile = field.getTileAt(f._1, f._2).
+        getOrElse({
+          println("There is no tile on field " + from)
+          return
+        })
+      if (t._1 <= Const.GRID_ROWS) {
+        moveTile(field, field, tile, t._1, t._2)
+      } else {
+        moveTile(field, rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
+      }
+    } else {
+      val tile = rackOfActivePlayer.getTileAt(f._1 - Const.GRID_ROWS, f._2).
+        getOrElse({
+          println("There is no tile on field " + from)
+          return
+        })
+      if (t._1 <= Const.GRID_ROWS) {
+        moveTile(rackOfActivePlayer, field, tile, t._1, t._2)
+      } else {
+        moveTile(rackOfActivePlayer, rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
+      }
+    }
+  }
+
+  def toColNumber(col: Char): Option[Int] = {
+    val ret = col - 65
+    if (ret >= 0 && ret <= Const.GRID_COLS) {
+      return Some(ret + 1)
+    }
+    None
+  }
+
+  def coordsToFields(from: String, to: String): Option[((Int, Int), (Int, Int))] = {
+    val fromChars = from.toList
+    val toChars = to.toList
+
+    val toRow: Int = toChars.filter(x => x.isDigit).mkString("").toInt
+    val fromRow: Int = fromChars.filter(x => x.isDigit).mkString("").toInt
+
+    val fromCol: Int = toColNumber(fromChars(0).charValue()) match {
+      case Some(c) => c
+      case None => {
+        return None
+      }
+    }
+    val toCol: Int = toColNumber(toChars(0).charValue()) match {
+      case Some(c) => c
+      case None =>
+        return None
+    }
+    Some((fromRow, fromCol), (toRow, toCol))
+  }
 }
 
 case class PlayerSwitchedEvent() extends Event

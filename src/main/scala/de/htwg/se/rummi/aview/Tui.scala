@@ -26,7 +26,7 @@ class Tui(co: Controller) extends Reactor {
       case "finish" => co.switchPlayer()
       case "draw" => co.draw()
       case _ => input.split(" ").toList match {
-        case from :: _ :: to :: Nil => moveTile(from, to)
+        case from :: _ :: to :: Nil => co.moveTile(from, to)
         case _ => println("Can not parse input.")
       }
     }
@@ -100,61 +100,6 @@ class Tui(co: Controller) extends Reactor {
     rows
   }
 
-  def moveTile(from: String, to: String): Unit = {
-    val (f, t) = coordsToFields(from, to).getOrElse(throw new NoSuchElementException("No such field."))
 
-    if (f._1 <= Const.GRID_ROWS) {
-      val tile = co.field.getTileAt(f._1, f._2).
-        getOrElse({
-          println("There is no tile on field " + from)
-          return
-        })
-      if (t._1 <= Const.GRID_ROWS) {
-        co.moveTile(co.field, co.field, tile, t._1, t._2)
-      } else {
-        co.moveTile(co.field, co.rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
-      }
-    } else {
-      val tile = co.rackOfActivePlayer.getTileAt(f._1 - Const.GRID_ROWS, f._2).
-        getOrElse({
-          println("There is no tile on field " + from)
-          return
-        })
-      if (t._1 <= Const.GRID_ROWS) {
-        co.moveTile(co.rackOfActivePlayer, co.field, tile, t._1, t._2)
-      } else {
-        co.moveTile(co.rackOfActivePlayer, co.rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
-      }
-    }
-  }
-
-  def toColNumber(col: Char): Option[Int] = {
-    val ret = col - 65
-    if (ret >= 0 && ret <= Const.GRID_COLS) {
-      return Some(ret + 1)
-    }
-    None
-  }
-
-  def coordsToFields(from: String, to: String): Option[((Int, Int), (Int, Int))] = {
-    val fromChars = from.toList
-    val toChars = to.toList
-
-    val toRow: Int = toChars.filter(x => x.isDigit).mkString("").toInt
-    val fromRow: Int = fromChars.filter(x => x.isDigit).mkString("").toInt
-
-    val fromCol: Int = toColNumber(fromChars(0).charValue()) match {
-      case Some(c) => c
-      case None => {
-        return None
-      }
-    }
-    val toCol: Int = toColNumber(toChars(0).charValue()) match {
-      case Some(c) => c
-      case None =>
-        return None
-    }
-    Some((fromRow, fromCol), (toRow, toCol))
-  }
 
 }
