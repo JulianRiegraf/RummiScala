@@ -1,5 +1,7 @@
 package de.htwg.se.rummi.model
 
+import play.api.libs.json.{JsNumber, JsObject, Json}
+
 case class Grid(ROWS: Int, COLS: Int, tiles: Map[(Int, Int), Tile]) {
 
   tiles.keys.find(x => x._1 > ROWS || x._2 > COLS)
@@ -28,6 +30,26 @@ case class Grid(ROWS: Int, COLS: Int, tiles: Map[(Int, Int), Tile]) {
 
   def size(): Int = tiles.size
 
+  def toXml = {
+    <grid>
+      <cols>{COLS}</cols>
+      <rows>{ROWS}</rows>
+      <tiles>
+        {tiles.toList.map(mapTupleToXml)}
+      </tiles>
+    </grid>
+  }
+
+  private def mapTupleToXml(tuple: ((Int, Int), Tile)) = {
+    val x = tuple._1._1
+    val y = tuple._1._2
+    val t = tuple._2
+
+    <tilePos>
+      <x>{x}</x>
+      <y>{y}</y>{t.toXml}
+    </tilePos>
+  }
 }
 
 object Grid {

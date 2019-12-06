@@ -148,7 +148,7 @@ class ControllerSpec extends WordSpec with Matchers {
           ((3, 3) -> g10)
       ))
 
-      print(controller.save())
+      print(controller.saveJson())
     }
   }
 

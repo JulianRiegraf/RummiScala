@@ -4,6 +4,7 @@ import play.api.libs.json._
 
 case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
 
+
   def toJson: JsObject = {
     Json.obj(
       "number" -> JsNumber(number),
@@ -30,6 +31,15 @@ case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
       colour.stringInColor(number.toString)
     }
   }
+
+  def toXml = {
+    <tile>
+      <number>{number}</number>
+      <color>{colour}</color>
+      <joker>{joker}</joker>
+    </tile>
+  }
+
 }
 
 object Tile {

@@ -5,6 +5,7 @@ import java.util.NoSuchElementException
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState.GameState
 import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
+import de.htwg.se.rummi.model.gridComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 
 import scala.swing.Publisher
@@ -16,12 +17,17 @@ class Controller(playerNames: List[String]) extends Publisher {
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
-  val fileIO = new JsonFileIo()
+  val fileIoJson = new JsonFileIo()
+  val fileIoXml = new XmlFileIo()
 
   val game = Game(playerNames)
 
-  def save(): String ={
-    fileIO.save(game)
+  def saveJson(): String ={
+    fileIoJson.save(game)
+  }
+
+  def saveXml(): String ={
+    fileIoXml.save(game)
   }
 
   def getGameState: GameState = {

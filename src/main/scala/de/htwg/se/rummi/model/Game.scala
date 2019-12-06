@@ -63,6 +63,15 @@ case class Game(playerNames: List[String]) {
     }
   }
 
+  def racksToXml = {
+    racks.toList.map(tuple => {
+      <rack>
+      <player>{tuple._1.name}</player>
+        {tuple._2.toXml}
+      </rack>
+    })
+  }
+
   def racksToJson(): JsArray = {
     JsArray(
       racks.toList.map(tuple => {
@@ -72,6 +81,17 @@ case class Game(playerNames: List[String]) {
         )
       })
     )
+  }
+  
+  def toXml()  = {
+    <game>
+    <players>{ players.map(p => p.toXml)}</players>
+    <racks>{racksToXml}</racks>
+    <field>{grid.toXml}</field>
+    <activePlayerIndex>{activePlayerIndex}</activePlayerIndex>
+    <isValidField>{isValidField}</isValidField>
+    <coveredTiles>{coveredTiles.toStream.map(t => t.toXml)}</coveredTiles>
+    </game>
   }
 }
 
