@@ -1,8 +1,7 @@
 package de.htwg.se.rummi.controller
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.model.RummiColor.GREEN
-import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile}
+import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
 class ControllerSpec extends WordSpec with Matchers {
@@ -38,12 +37,11 @@ class ControllerSpec extends WordSpec with Matchers {
 
     "return true if there are 30 or more valid points played " in {
       val list = g11 :: g12 :: g13 :: Nil
-      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g12) +
-          ((1, 3) -> g13))
-      )
+          ((1, 3) -> g13)))
 
       controller.tilesMovedFromRackToGrid = list
 
@@ -84,39 +82,19 @@ class ControllerSpec extends WordSpec with Matchers {
     val playingfieldSet3 = new RummiSet(list3)
 
     "return false if there are wrong sets " in {
-      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g8) +
           ((1, 3) -> g13))
       )
 
-      val correctMove = controller.isValidField
+      val correctMove = controller.game.isValidField
       correctMove should be(false)
     }
 
     "return true if multiple sets are correct " in {
-      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
-        Map.empty + ((1, 1) -> g10)))
-      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
-        Map.empty +
-          ((1, 1) -> g11) +
-          ((1, 2) -> g12) +
-          ((1, 3) -> g13) +
-
-          ((3, 1) -> g8) +
-          ((3, 2) -> g9)
-      ))
-
-      controller.moveTile(controller.rackOfActivePlayer, controller.field, g10, 3, 3)
-      val correctMove = controller.isValidField
-      correctMove should be(true)
-    }
-  }
-
-  "Players can move Tiles " should {
-    "either from their rack to the grid " in {
-      controller.setField(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11) +
           ((1, 2) -> g12) +
@@ -124,8 +102,25 @@ class ControllerSpec extends WordSpec with Matchers {
 
           ((3, 1) -> g8) +
           ((3, 2) -> g9) +
-          ((3, 3) -> g10))
-      )
+          ((3, 3) -> g10)
+      ))
+      val correctMove = controller.game.isValidField
+      correctMove should be(false)
+    }
+  }
+
+  "Players can move Tiles " should {
+    "either from their rack to the grid " in {
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g12) +
+          ((1, 3) -> g13) +
+
+          ((3, 1) -> g8) +
+          ((3, 2) -> g9) +
+          ((3, 3) -> g10)
+      ))
 
       val listOfSets = controller.extractSets(controller.field)
       listOfSets.size should be(2)
@@ -137,6 +132,23 @@ class ControllerSpec extends WordSpec with Matchers {
       listOfSets(0).tiles(1) should be(g9)
       listOfSets(0).tiles(2) should be(g10)
 
+    }
+  }
+
+  "dasda" should {
+    "adsdas" in {
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g12) +
+          ((1, 3) -> g13) +
+
+          ((3, 1) -> g8) +
+          ((3, 2) -> g9) +
+          ((3, 3) -> g10)
+      ))
+
+      print(controller.save())
     }
   }
 

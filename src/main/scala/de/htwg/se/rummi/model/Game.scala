@@ -1,13 +1,9 @@
 package de.htwg.se.rummi.model
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.model.RummiColor.{BLUE, GREEN, RED, WHITE, YELLOW}
+import play.api.libs.json.{JsArray, JsObject, JsValue, Json, Writes}
 
 case class Game(playerNames: List[String]) {
-
-
-  val players = playerNames.map(x => Player(x))
-  private var activePlayerIndex: Int = 0
 
 
   // Jeder Spieler bewahrt seine Steine in seinem Rack auf
@@ -17,27 +13,16 @@ case class Game(playerNames: List[String]) {
   var coveredTiles: List[Tile] = Nil
 
   // Alle Groups oder Runs, die auf dem Spielfeld liegen
-  var field: Grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
+  var grid: Grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
 
-  def activePlayer = {
-    players(activePlayerIndex)
-  }
+  val players = playerNames.map(x => Player(x))
+  var activePlayerIndex: Int = 0
+  var isValidField = false
 
-  def nextPlayer(): Unit ={
-    activePlayerIndex += 1
-    if (activePlayerIndex >= players.size) {
-      activePlayerIndex = 0
-    }
-  }
 
   def generateNewGame(players: List[Player]): Unit = {
 
-    players.foreach(p => {
-      p.inFirstRound = true
-      p.points = 0
-    })
-
-    field = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
+    grid = Grid(Const.GRID_ROWS, Const.GRID_COLS, Map.empty)
     coveredTiles = Nil
     racks = Map.empty
 
@@ -77,4 +62,34 @@ case class Game(playerNames: List[String]) {
       racks = racks + (p -> Grid(Const.RACK_ROWS, Const.RACK_COLS, map))
     }
   }
+
+  def racksToJson(): JsArray = {
+    JsArray(
+      racks.toList.map(tuple => {
+        Json.obj(
+          "player" -> tuple._1.name,
+          "grid" -> tuple._2
+        )
+      })
+    )
+  }
+}
+
+object Game {
+
+  import play.api.libs.json.Json
+
+  implicit val gameWrites = new Writes[Game] {
+    override def writes(o: Game): JsValue = {
+      Json.obj(
+        "players" -> JsArray(o.players.map(p => p.toJson)),
+        "racks" -> o.racksToJson(),
+        "field" -> o.grid,
+        "activePlayerIndex" -> o.activePlayerIndex,
+        "isValidField" -> o.isValidField,
+        "coveredTiles" -> o.coveredTiles
+      )
+    }
+  }
+  implicit val gameReads = Json.reads[Game]
 }

@@ -43,7 +43,7 @@ class RummiSet(var tiles: List[Tile]) {
 
   def isValidRun(): Boolean = {
     if (tiles.size < 3) return false
-    if (tiles.groupBy(_.color).size > 1 && tiles.count(x => x.joker) == 0) return false
+    if (tiles.groupBy(_.colour).size > 1 && tiles.count(x => x.joker) == 0) return false
     var n: List[Tile] = tiles.sortBy(_.number)
     if (tiles.count(x => x.joker) > 0) {
       // TODO: Check if valid with Joker
@@ -93,7 +93,7 @@ class RummiSet(var tiles: List[Tile]) {
     val isJoker = tiles.count(x => x.joker) > 0
     if(!isJoker){
       if (tiles.groupBy(_.number).size > 1) return false
-      if (tiles.groupBy(_.color).size != tiles.size) return false
+      if (tiles.groupBy(_.colour).size != tiles.size) return false
       return true
     } else {
       //joker involved

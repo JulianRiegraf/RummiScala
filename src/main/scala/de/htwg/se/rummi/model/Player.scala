@@ -1,8 +1,17 @@
 package de.htwg.se.rummi.model
 
-case class Player(name: String) {
+import play.api.libs.json.{JsObject, Json}
 
-  var inFirstRound = true
-  var points = 0
+case class Player(name: String, var inFirstRound: Boolean = true, var points: Int = 0) {
 
+  def toJson: JsObject = {
+    Json.obj(
+      "name" -> name,
+      "inFirstRound" -> inFirstRound,
+      "points" -> points
+    )
+  }
+
+  implicit val playerWrites = Json.writes[Game]
+  implicit val playerReads = Json.reads[Player]
 }

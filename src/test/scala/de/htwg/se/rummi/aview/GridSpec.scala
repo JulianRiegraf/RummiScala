@@ -1,7 +1,7 @@
 package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.controller.Controller
-import de.htwg.se.rummi.model.RummiColor.GREEN
+import de.htwg.se.rummi.model._
 import de.htwg.se.rummi.model.{Grid, RummiSet, Tile}
 import org.scalatest.{Matchers, WordSpec}
 

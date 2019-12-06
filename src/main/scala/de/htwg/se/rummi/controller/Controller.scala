@@ -4,6 +4,7 @@ import java.util.NoSuchElementException
 
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState.GameState
+import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 
 import scala.swing.Publisher
@@ -15,9 +16,13 @@ class Controller(playerNames: List[String]) extends Publisher {
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
+  val fileIO = new JsonFileIo()
 
   val game = Game(playerNames)
-  var isValidField = false
+
+  def save(): String ={
+    fileIO.save(game)
+  }
 
   def getGameState: GameState = {
     gameState
@@ -28,23 +33,33 @@ class Controller(playerNames: List[String]) extends Publisher {
     publish(new GameStateChanged)
   }
 
-  def activePlayer = game.activePlayer
-
   def field: Grid = {
-    game.field
+    game.grid
+  }
+
+  def players : List[Player]= {
+    game.players
   }
 
   def initGame() = {
     gameState = GameState.WAITING
     currentSets = Nil
     tilesMovedFromRackToGrid = Nil
+    game.activePlayerIndex = 0
 
-    game.generateNewGame(game.players)
-    
+    game.generateNewGame(players)
+    players.foreach(p => {
+      p.inFirstRound = true
+      p.points = 0
+    })
+
     publish(new GameStateChanged)
     publish(new PlayerSwitchedEvent)
   }
 
+  def activePlayer: Player = {
+    players(game.activePlayerIndex)
+  }
 
   // finish
   def switchPlayer(): Unit = {
@@ -53,10 +68,13 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
 
     if (tilesMovedFromRackToGrid.size > 0){
-      game.activePlayer.inFirstRound = false
+      activePlayer.inFirstRound = false
     }
 
-    game.nextPlayer()
+    game.activePlayerIndex = game.activePlayerIndex + 1
+    if (game.activePlayerIndex >= players.size) {
+      game.activePlayerIndex = 0
+    }
 
     currentSets = extractSets(field)
 
@@ -66,7 +84,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     tilesMovedFromRackToGrid = Nil
     publish(new PlayerSwitchedEvent)
   }
-  def rackOfActivePlayer: Grid = getRack(game.activePlayer)
+  def rackOfActivePlayer: Grid = getRack(activePlayer)
 
   def getRack(player: Player): Grid = {
     game.racks.find(x => x._1 == player) match {
@@ -78,10 +96,10 @@ class Controller(playerNames: List[String]) extends Publisher {
     }
   }
 
-  def setField(newGrid: Grid) = game.field = newGrid
+  def setGrid(newGrid: Grid) = game.grid = newGrid
 
   def setRack(newRack: Grid) = {
-    game.racks = game.racks + (game.activePlayer -> newRack)
+    game.racks = game.racks + (activePlayer -> newRack)
   }
 
   /**
@@ -134,8 +152,8 @@ class Controller(playerNames: List[String]) extends Publisher {
         valid = false
       }
     }
-    if (isValidField != valid) {
-      isValidField = valid
+    if (game.isValidField != valid) {
+      game.isValidField = valid
       publish(new ValidStateChangedEvent)
     }
     valid
@@ -154,9 +172,9 @@ class Controller(playerNames: List[String]) extends Publisher {
     game.coveredTiles = game.coveredTiles.filter(x => x != newTile)
 
     // get the current rack from the player
-    val oldRack = game.racks.find(x => x._1 == game.activePlayer) match {
+    val oldRack = game.racks.find(x => x._1 == activePlayer) match {
       case Some(r) => r._2
-      case None => throw new NoSuchElementException("No rack for player '" + game.activePlayer + "'.")
+      case None => throw new NoSuchElementException("No rack for player '" + activePlayer + "'.")
     }
 
     // create a new rack with the tiles from the old one plus the newly drawn one
@@ -192,23 +210,23 @@ class Controller(playerNames: List[String]) extends Publisher {
   def moveTile(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int) = {
     val (f, t): (Grid, Grid) = moveTileImpl(gridFrom, gridTo, tile, newRow, newCol)
 
-    if ((gridFrom eq field) && (gridTo eq getRack(game.activePlayer))) {
+    if ((gridFrom eq field) && (gridTo eq getRack(activePlayer))) {
       setRack(t)
-      setField(f)
+      setGrid(f)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid.filter(x => x != tile)
     }
 
     if ((gridFrom eq field) && (gridTo eq field)) {
-      setField(f)
+      setGrid(f)
     }
 
-    if ((gridFrom eq getRack(game.activePlayer)) && (gridTo eq field)) {
+    if ((gridFrom eq getRack(activePlayer)) && (gridTo eq field)) {
       setRack(f)
-      setField(t)
+      setGrid(t)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid :+ tile
     }
 
-    if ((gridFrom eq getRack(game.activePlayer)) && (gridTo eq getRack(game.activePlayer))) {
+    if ((gridFrom eq getRack(activePlayer)) && (gridTo eq getRack(activePlayer))) {
       setRack(t)
     }
 
@@ -221,14 +239,14 @@ class Controller(playerNames: List[String]) extends Publisher {
     if (tilesMovedFromRackToGrid.size == 0) {
       setGameState(GameState.WAITING)
     } else if (validateField()) {
-      if (game.activePlayer.inFirstRound) {
+      if (activePlayer.inFirstRound) {
         if (playerReachedMinLayOutPoints()) {
           setGameState(GameState.VALID)
         } else {
           setGameState(GameState.TO_LESS)
         }
       } else {
-        if (getRack(game.activePlayer).tiles.size == 0) {
+        if (getRack(activePlayer).tiles.size == 0) {
           setGameState(GameState.WON)
         } else {
           setGameState(GameState.VALID)
@@ -240,14 +258,14 @@ class Controller(playerNames: List[String]) extends Publisher {
   }
 
   def sortRack(): Unit = {
-    val sortedRack = sortRack(getRack(game.activePlayer))
+    val sortedRack = sortRack(getRack(activePlayer))
     setRack(sortedRack)
     publish(new FieldChangedEvent)
   }
 
   private def sortRack(rack: Grid): Grid = {
     var tilesByColor = rack.tiles.map(x => x._2)
-      .groupBy(x => x.color)
+      .groupBy(x => x.colour)
     while (tilesByColor.size > Const.RACK_ROWS) {
       // combine colors if there are to many
       val keyOfFirstElement = tilesByColor.keys.toList(0)
@@ -267,6 +285,63 @@ class Controller(playerNames: List[String]) extends Publisher {
       row += 1
     })
     Grid(Const.RACK_ROWS, Const.RACK_COLS, newMap)
+  }
+
+  def moveTile(from: String, to: String): Unit = {
+    val (f, t) = coordsToFields(from, to).getOrElse(throw new NoSuchElementException("No such field."))
+
+    if (f._1 <= Const.GRID_ROWS) {
+      val tile = field.getTileAt(f._1, f._2).
+        getOrElse({
+          println("There is no tile on field " + from)
+          return
+        })
+      if (t._1 <= Const.GRID_ROWS) {
+        moveTile(field, field, tile, t._1, t._2)
+      } else {
+        moveTile(field, rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
+      }
+    } else {
+      val tile = rackOfActivePlayer.getTileAt(f._1 - Const.GRID_ROWS, f._2).
+        getOrElse({
+          println("There is no tile on field " + from)
+          return
+        })
+      if (t._1 <= Const.GRID_ROWS) {
+        moveTile(rackOfActivePlayer, field, tile, t._1, t._2)
+      } else {
+        moveTile(rackOfActivePlayer, rackOfActivePlayer, tile, t._1 - Const.GRID_ROWS, t._2)
+      }
+    }
+  }
+
+  def toColNumber(col: Char): Option[Int] = {
+    val ret = col - 65
+    if (ret >= 0 && ret <= Const.GRID_COLS) {
+      return Some(ret + 1)
+    }
+    None
+  }
+
+  def coordsToFields(from: String, to: String): Option[((Int, Int), (Int, Int))] = {
+    val fromChars = from.toList
+    val toChars = to.toList
+
+    val toRow: Int = toChars.filter(x => x.isDigit).mkString("").toInt
+    val fromRow: Int = fromChars.filter(x => x.isDigit).mkString("").toInt
+
+    val fromCol: Int = toColNumber(fromChars(0).charValue()) match {
+      case Some(c) => c
+      case None => {
+        return None
+      }
+    }
+    val toCol: Int = toColNumber(toChars(0).charValue()) match {
+      case Some(c) => c
+      case None =>
+        return None
+    }
+    Some((fromRow, fromCol), (toRow, toCol))
   }
 }
 

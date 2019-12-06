@@ -2,7 +2,7 @@ package de.htwg.se.rummi.aview.swing
 
 import java.awt.Color
 
-import de.htwg.se.rummi.model.{RummiColor, Tile}
+import de.htwg.se.rummi.model._
 
 import scala.swing.{Button, Swing}
 
@@ -19,12 +19,12 @@ class Field(val row: Int, val col: Int) extends Button {
 
     tileOpt = Some(tile)
 
-    background = tile.color match {
-      case RummiColor.YELLOW => Color.decode("#FFFF33")
-      case RummiColor.GREEN => Color.decode("#90EE90")
-      case RummiColor.BLUE => Color.decode("#add8e6")
-      case RummiColor.RED => Color.decode("#ff0000")
-      case RummiColor.WHITE => Color.decode("#000000")
+    background = tile.colour match {
+      case YELLOW => Color.decode("#FFFF33")
+      case GREEN => Color.decode("#90EE90")
+      case BLUE => Color.decode("#add8e6")
+      case RED => Color.decode("#ff0000")
+      case WHITE => Color.decode("#000000")
     }
 
     text = tile.joker match {
