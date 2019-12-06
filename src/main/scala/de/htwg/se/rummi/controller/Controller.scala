@@ -53,7 +53,6 @@ class Controller(playerNames: List[String]) extends Publisher {
     tilesMovedFromRackToGrid = Nil
     game.activePlayerIndex = 0
 
-    game.generateNewGame(players)
     players.foreach(p => {
       p.inFirstRound = true
       p.points = 0

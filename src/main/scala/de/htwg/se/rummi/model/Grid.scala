@@ -71,7 +71,7 @@ object Grid {
     Json.obj(
       "x" -> JsNumber(x),
       "y" -> JsNumber(y),
-      "tile" -> t.toJson
+      "tile" -> Json.toJson(t)
     )
   }
 

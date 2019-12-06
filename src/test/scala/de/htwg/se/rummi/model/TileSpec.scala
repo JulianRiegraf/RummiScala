@@ -19,7 +19,7 @@ class TileSpec extends WordSpec with Matchers {
     }
 
     "convert to json" in {
-      tileBlueFour.toJson should be
+      Json.toJson(tileBlueFour) should be
         Json.parse("{\"number\":4,\"color\":\"BLUE\",\"joker\":false}")
     }
 

@@ -19,6 +19,8 @@ case class Game(playerNames: List[String]) {
   var activePlayerIndex: Int = 0
   var isValidField = false
 
+  generateNewGame(players)
+
 
   def generateNewGame(players: List[Player]): Unit = {
 
