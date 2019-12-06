@@ -32,5 +32,17 @@ class TileSpec extends WordSpec with Matchers {
       tileBlueFour equals "some random string" should be(false)
     }
 
+    "toString converts to a ansi colorized output of the number" in {
+      val ansiColorBlue = "\u001B[34m"
+      val ansiColorReset = "\u001B[0m"
+      tileBlueFour.toString should be(ansiColorBlue + "4" + ansiColorReset)
+    }
+
+    "if tile is a joker, it should print a white 'J'" in {
+      val ansiColorWhite = "\u001B[37m"
+      val ansiColorReset = "\u001B[0m"
+      Tile(2342, RED, true).toString should be(ansiColorWhite + "J" + ansiColorReset)
+    }
+
   }
 }

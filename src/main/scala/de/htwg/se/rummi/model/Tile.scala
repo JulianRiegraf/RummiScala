@@ -13,9 +13,7 @@ case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
     )
   }
 
-
   def this(number: Int, color: RummiColour) = this(number, color, false)
-
 
   override def equals(that: Any): Boolean = {
     that match {
@@ -26,7 +24,7 @@ case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
 
   override def toString: String = {
     if (joker) {
-      colour.stringInColor("J")
+      WHITE.stringInColor("J")
     } else {
       colour.stringInColor(number.toString)
     }
@@ -34,9 +32,15 @@ case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
 
   def toXml = {
     <tile>
-      <number>{number}</number>
-      <color>{colour}</color>
-      <joker>{joker}</joker>
+      <number>
+        {number}
+      </number>
+      <color>
+        {colour}
+      </color>
+      <joker>
+        {joker}
+      </joker>
     </tile>
   }
 
