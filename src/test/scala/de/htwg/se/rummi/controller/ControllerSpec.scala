@@ -134,22 +134,4 @@ class ControllerSpec extends WordSpec with Matchers {
 
     }
   }
-
-  "dasda" should {
-    "adsdas" in {
-      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
-        Map.empty +
-          ((1, 1) -> g11) +
-          ((1, 2) -> g12) +
-          ((1, 3) -> g13) +
-
-          ((3, 1) -> g8) +
-          ((3, 2) -> g9) +
-          ((3, 3) -> g10)
-      ))
-
-      print(controller.saveJson())
-    }
-  }
-
 }

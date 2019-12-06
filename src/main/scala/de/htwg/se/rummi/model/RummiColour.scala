@@ -4,10 +4,6 @@ case class RummiColour(val name: String, val ansiCode: String) extends Ordered[R
 
   val ANSI_RESET = "\u001B[0m"
 
-    def printInColor(text: String): Unit = {
-      print(ansiCode + text + ANSI_RESET)
-    }
-
     def stringInColor(text: String): String = {
       ansiCode + text + ANSI_RESET
     }
