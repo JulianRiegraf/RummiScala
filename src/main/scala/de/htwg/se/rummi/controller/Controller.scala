@@ -2,6 +2,7 @@ package de.htwg.se.rummi.controller
 
 import java.util.NoSuchElementException
 
+import com.google.inject.{Guice, Inject}
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState.GameState
 import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
@@ -11,9 +12,9 @@ import de.htwg.se.rummi.model.{RummiSet, _}
 import scala.swing.Publisher
 import scala.swing.event.Event
 
-class Controller(playerNames: List[String]) extends Publisher {
+class Controller @Inject()(playerNames: List[String]) extends Publisher {
 
-
+  //val injector = Guice.createInjector(new RummiModule)
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
