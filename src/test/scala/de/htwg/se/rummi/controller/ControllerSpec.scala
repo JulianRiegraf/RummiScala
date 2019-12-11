@@ -49,19 +49,25 @@ class ControllerSpec extends WordSpec with Matchers {
       correctMove should be(true)
     }
 
-    "return true if a player draws and than finishes the turn " in {
+    "return the rack of a specific player " in {
+      controller.getRack(controller.activePlayer) shouldBe
+        controller.game.racks(controller.activePlayer)
 
+      an[NoSuchElementException] should be thrownBy
+        controller.getRack(Player("invalid player"))
     }
 
-    "return false if a player tries to skip their turn" in {
-
+    "set the rack of the active player" in {
+      val theNewRack = Grid(4, 13, Map.empty)
+      controller.setRack(theNewRack)
+      controller.getRack(controller.activePlayer) shouldBe theNewRack
     }
 
-    "a player shouldn't be allowed to draw 2 tiles" in {
-
+    "translate coordinates from A1 to tuple(1,1)" in {
+      controller.coordsToFields("A9", "A1").get shouldBe((9, 1), (1, 1))
+      val outOfBoundsCoordinate = "Z324"
+      controller.coordsToFields(outOfBoundsCoordinate, "A1") shouldBe None
     }
-
-
   }
 
   "After a Move is made it should be the next players turn " should {
