@@ -2,9 +2,7 @@ package de.htwg.se.rummi.model
 
 import play.api.libs.json._
 
-case class Tile(number: Int, colour: RummiColour, joker: Boolean) {
-
-  def this(number: Int, color: RummiColour) = this(number, color, false)
+case class Tile(number: Int, colour: RummiColour, joker : Boolean = false) {
 
   override def equals(that: Any): Boolean = {
     that match {

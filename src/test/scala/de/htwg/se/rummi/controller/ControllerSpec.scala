@@ -31,8 +31,9 @@ class ControllerSpec extends WordSpec with Matchers {
   }
 
   "The first play is either to draw a card or to play 30+ valid points " should {
-    "return false and publish a statusmessage if there are 29 or less pts played" in {
-
+    "return false and publish a status message if there are 29 or less pts played" in {
+      val correctMove = controller.playerReachedMinLayOutPoints()
+      correctMove should be(false)
     }
 
     "return true if there are 30 or more valid points played " in {
@@ -112,6 +113,44 @@ class ControllerSpec extends WordSpec with Matchers {
       ))
       val correctMove = controller.game.isValidField
       correctMove should be(false)
+    }
+  }
+
+  "Players draw tiles" should {
+    "take a tile from the stack and adds it to the players rack" in {
+      val tile = controller.game.coveredTiles(0)
+      var rack = controller.getRack(controller.activePlayer)
+      rack.tiles.values.toList.contains(tile) shouldBe false
+      controller.draw()
+      rack = controller.getRack(controller.activePlayer)
+      rack.tiles.values.toList.contains(tile) shouldBe true
+    }
+
+    "can sort tiles by color and number" in {
+      val g1 = Tile(1, GREEN)
+      val g5 = Tile(5, GREEN)
+      val b1 = Tile(1, BLUE)
+      val y1 = Tile(1, YELLOW)
+      val r1 = Tile(1, RED)
+
+
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g1) +
+          ((1, 2) -> g5) +
+          ((1, 7) -> b1) +
+          ((5, 3) -> r1) +
+          ((1, 3) -> y1)
+      ))
+
+      controller.sortRack()
+      val rack = controller.getRack(controller.activePlayer)
+      rack.tiles shouldBe Map.empty +
+        ((1, 1) -> r1) +
+        ((2, 1) -> g1) +
+        ((2, 2) -> g5) +
+        ((3, 1) -> y1) +
+        ((4, 1) -> b1)
     }
   }
 
