@@ -1,7 +1,6 @@
 package de.htwg.se.rummi.model
 
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.Json
 
 class GameSpec extends WordSpec with Matchers {
 
