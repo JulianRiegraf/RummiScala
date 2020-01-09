@@ -1,7 +1,6 @@
-package de.htwg.se.sudoku.model.fileIoComponent
+package de.htwg.se.rummi.model.fileIoComponent
 
 import de.htwg.se.rummi.model.Game
-import de.htwg.se.rummi.model.gridComponent.GridInterface
 
 trait FileIoInterface {
 

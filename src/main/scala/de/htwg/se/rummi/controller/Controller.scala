@@ -5,8 +5,8 @@ import java.util.NoSuchElementException
 import com.google.inject.{Guice, Inject}
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState.GameState
-import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
-import de.htwg.se.rummi.model.gridComponent.xmlFileIo.XmlFileIo
+import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
+import de.htwg.se.rummi.model.fileIoComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 
 import scala.swing.Publisher
