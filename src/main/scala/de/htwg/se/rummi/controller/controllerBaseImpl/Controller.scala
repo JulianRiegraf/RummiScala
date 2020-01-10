@@ -1,32 +1,34 @@
-package de.htwg.se.rummi.controller
+package de.htwg.se.rummi.controller.controllerBaseImpl
 
 import java.util.NoSuchElementException
 
 import de.htwg.se.rummi.Const
+import de.htwg.se.rummi.controller.GameState
 import de.htwg.se.rummi.controller.GameState.GameState
 import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.gridComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
+import de.htwg.se.rummi.util.UndoManager
 
 import scala.swing.Publisher
 import scala.swing.event.Event
 
 class Controller(playerNames: List[String]) extends Publisher {
 
-
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
   val fileIoJson = new JsonFileIo()
   val fileIoXml = new XmlFileIo()
+  private val undoManager = new UndoManager
 
   val game = Game(playerNames)
 
-  def saveJson(): String ={
+  def saveJson(): String = {
     fileIoJson.save(game)
   }
 
-  def saveXml(): String ={
+  def saveXml(): String = {
     fileIoXml.save(game)
   }
 
@@ -34,7 +36,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     gameState
   }
 
-  def setGameState(g: GameState): Unit ={
+  def setGameState(g: GameState): Unit = {
     gameState = g
     publish(new GameStateChanged)
   }
@@ -43,7 +45,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     game.grid
   }
 
-  def players : List[Player]= {
+  def players: List[Player] = {
     game.players
   }
 
@@ -62,6 +64,15 @@ class Controller(playerNames: List[String]) extends Publisher {
     publish(new PlayerSwitchedEvent)
   }
 
+  def undo: Unit = {
+    undoManager.undoStep
+  }
+
+  def redo: Unit = {
+    undoManager.redoStep
+  }
+
+
   def activePlayer: Player = {
     players(game.activePlayerIndex)
   }
@@ -72,7 +83,7 @@ class Controller(playerNames: List[String]) extends Publisher {
       return
     }
 
-    if (tilesMovedFromRackToGrid.size > 0){
+    if (tilesMovedFromRackToGrid.size > 0) {
       activePlayer.inFirstRound = false
     }
 
@@ -89,6 +100,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     tilesMovedFromRackToGrid = Nil
     publish(new PlayerSwitchedEvent)
   }
+
   def rackOfActivePlayer: Grid = getRack(activePlayer)
 
   def getRack(player: Player): Grid = {
@@ -110,6 +122,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   /**
     * Did player reached minimum score to get out?
     * All sets which the user builds or appends to do count.
+    *
     * @return true if player reached minimum score
     */
   def playerReachedMinLayOutPoints(): Boolean = {
