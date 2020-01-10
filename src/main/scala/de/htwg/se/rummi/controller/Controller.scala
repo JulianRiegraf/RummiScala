@@ -2,9 +2,11 @@ package de.htwg.se.rummi.controller
 
 import java.util.NoSuchElementException
 
+import com.google.inject.name.Names
 import com.google.inject.{Guice, Inject}
-import de.htwg.se.rummi.Const
+import de.htwg.se.rummi.{Const, RummiModule}
 import de.htwg.se.rummi.controller.GameState.GameState
+import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
 import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.fileIoComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
@@ -14,12 +16,13 @@ import scala.swing.event.Event
 
 class Controller @Inject()() extends Publisher {
 
-  //val injector = Guice.createInjector(new RummiModule)
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
-  val fileIoJson = new JsonFileIo()
-  val fileIoXml = new XmlFileIo()
+
+  val injector = Guice.createInjector(new RummiModule)
+  val fileIo = injector.getInstance(classOf[FileIoInterface])
+
   var game: Game = Game(Nil)
 
   def initGame(): Unit = {
@@ -43,12 +46,8 @@ class Controller @Inject()() extends Publisher {
     publish(new PlayerSwitchedEvent)
   }
 
-  def saveJson(): String = {
-    fileIoJson.save(game)
-  }
-
-  def saveXml(): String = {
-    fileIoXml.save(game)
+  def save(): String = {
+    fileIo.save(game)
   }
 
   def getGameState: GameState = {
