@@ -3,9 +3,7 @@ package de.htwg.se.rummi.aview.swing
 import java.awt.Color
 
 import de.htwg.se.rummi.controller._
-import de.htwg.se.rummi.controller.controllerBaseImpl.{Controller, FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
-import de.htwg.se.rummi.model.{Ending, Player, RummiSet, Tile}
-import javax.swing.plaf.BorderUIResource.EmptyBorderUIResource
+import de.htwg.se.rummi.controller.controllerBaseImpl._
 
 import scala.swing._
 import scala.swing.event.ButtonClicked

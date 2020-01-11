@@ -1,8 +1,8 @@
-package de.htwg.se.rummi.model.gridComponent.jsonImpl
+package de.htwg.se.rummi.model.fileIoComponent.jsonImpl
 
 import de.htwg.se.rummi.model.Game
+import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
 import de.htwg.se.rummi.model.gridComponent.GridInterface
-import de.htwg.se.sudoku.model.fileIoComponent.FileIoInterface
 import play.api.libs.json.{JsValue, Json}
 
 class JsonFileIo extends FileIoInterface {

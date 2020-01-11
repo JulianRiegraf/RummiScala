@@ -21,8 +21,7 @@ class Tui(co: Controller) extends Reactor {
       case "n" => //controller.createNewGrid
       case "z" => co.undo
       case "y" => co.redo
-      case "json" => print(co.saveJson)
-      case "xml" => print(co.saveXml)
+      case "s" => print(co.save)
       case "sort" => co.sortRack()
       case "finish" => co.switchPlayer()
       case "draw" => co.draw()
@@ -100,7 +99,6 @@ class Tui(co: Controller) extends Reactor {
     }
     rows
   }
-
 
 
 }

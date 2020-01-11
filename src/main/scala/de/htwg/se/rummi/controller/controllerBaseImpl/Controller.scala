@@ -4,32 +4,54 @@ import java.util.NoSuchElementException
 
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState
+import com.google.inject.name.Names
+import com.google.inject.{Guice, Inject}
 import de.htwg.se.rummi.controller.GameState.GameState
-import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
-import de.htwg.se.rummi.model.gridComponent.xmlFileIo.XmlFileIo
+import de.htwg.se.rummi.{Const, RummiModule}
+import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
+import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
+import de.htwg.se.rummi.model.fileIoComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 import de.htwg.se.rummi.util.UndoManager
 
 import scala.swing.Publisher
 import scala.swing.event.Event
 
-class Controller(playerNames: List[String]) extends Publisher {
+
+class Controller @Inject()() extends Publisher {
 
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
-  val fileIoJson = new JsonFileIo()
-  val fileIoXml = new XmlFileIo()
   private val undoManager = new UndoManager
+  val injector = Guice.createInjector(new RummiModule)
+  val fileIo = injector.getInstance(classOf[FileIoInterface])
 
-  val game = Game(playerNames)
+  var game: Game = Game(Nil)
 
-  def saveJson(): String = {
-    fileIoJson.save(game)
+  def initGame(): Unit = {
+    val players = game.playerNames
+    initGame(players)
   }
 
-  def saveXml(): String = {
-    fileIoXml.save(game)
+  def initGame(playerNames: List[String]): Unit = {
+    gameState = GameState.WAITING
+    currentSets = Nil
+    tilesMovedFromRackToGrid = Nil
+    game.activePlayerIndex = 0
+
+    players.foreach(p => {
+      p.inFirstRound = true
+      p.points = 0
+    })
+
+    game = Game(playerNames)
+    publish(new GameStateChanged)
+    publish(new PlayerSwitchedEvent)
+  }
+
+  def save(): String = {
+    fileIo.save(game)
   }
 
   def getGameState: GameState = {
@@ -47,21 +69,6 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   def players: List[Player] = {
     game.players
-  }
-
-  def initGame() = {
-    gameState = GameState.WAITING
-    currentSets = Nil
-    tilesMovedFromRackToGrid = Nil
-    game.activePlayerIndex = 0
-
-    players.foreach(p => {
-      p.inFirstRound = true
-      p.points = 0
-    })
-
-    publish(new GameStateChanged)
-    publish(new PlayerSwitchedEvent)
   }
 
   def undo: Unit = {

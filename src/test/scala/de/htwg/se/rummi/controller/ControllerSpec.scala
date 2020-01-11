@@ -10,8 +10,8 @@ class ControllerSpec extends WordSpec with Matchers {
 
   var playerNames: List[String] = List("patrick", "julian")
 
-  var controller = new Controller(playerNames)
-  controller.initGame()
+  var controller = new Controller()
+  controller.initGame(playerNames)
 
   val g9 = new Tile(9, GREEN)
   val g10 = new Tile(10, GREEN)
@@ -191,7 +191,7 @@ class ControllerSpec extends WordSpec with Matchers {
       controller.moveTile(rack, rack, g11, 1, 2)
 
       rack = controller.getRack(controller.activePlayer)
-      rack.getTileAt(1,2).get shouldBe g11
+      rack.getTileAt(1, 2).get shouldBe g11
 
 
     }

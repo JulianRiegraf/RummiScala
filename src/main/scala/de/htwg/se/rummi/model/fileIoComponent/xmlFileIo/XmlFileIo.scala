@@ -1,7 +1,7 @@
-package de.htwg.se.rummi.model.gridComponent.xmlFileIo
+package de.htwg.se.rummi.model.fileIoComponent.xmlFileIo
 
 import de.htwg.se.rummi.model.Game
-import de.htwg.se.sudoku.model.fileIoComponent.FileIoInterface
+import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
 
 import scala.xml.PrettyPrinter
 
