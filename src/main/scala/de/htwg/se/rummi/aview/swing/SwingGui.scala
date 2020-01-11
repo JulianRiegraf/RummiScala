@@ -77,7 +77,7 @@ class SwingGui(co: Controller) extends MainFrame {
 
   var selectedField: Option[Field] = Option.empty
 
-  reactions += {
+                                       reactions += {
     case ButtonClicked(b) => {
 
       if (b.isInstanceOf[Field]) {

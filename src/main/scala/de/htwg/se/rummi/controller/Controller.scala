@@ -2,52 +2,35 @@ package de.htwg.se.rummi.controller
 
 import java.util.NoSuchElementException
 
-import de.htwg.se.rummi.Const
+import com.google.inject.name.Names
+import com.google.inject.{Guice, Inject}
+import de.htwg.se.rummi.{Const, RummiModule}
 import de.htwg.se.rummi.controller.GameState.GameState
-import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
-import de.htwg.se.rummi.model.gridComponent.xmlFileIo.XmlFileIo
+import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
+import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
+import de.htwg.se.rummi.model.fileIoComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 
 import scala.swing.Publisher
 import scala.swing.event.Event
 
-class Controller(playerNames: List[String]) extends Publisher {
-
+class Controller @Inject()() extends Publisher {
 
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
-  val fileIoJson = new JsonFileIo()
-  val fileIoXml = new XmlFileIo()
 
-  val game = Game(playerNames)
+  val injector = Guice.createInjector(new RummiModule)
+  val fileIo = injector.getInstance(classOf[FileIoInterface])
 
-  def saveJson(): String ={
-    fileIoJson.save(game)
+  var game: Game = Game(Nil)
+
+  def initGame(): Unit = {
+    val players = game.playerNames
+    initGame(players)
   }
 
-  def saveXml(): String ={
-    fileIoXml.save(game)
-  }
-
-  def getGameState: GameState = {
-    gameState
-  }
-
-  def setGameState(g: GameState): Unit ={
-    gameState = g
-    publish(new GameStateChanged)
-  }
-
-  def field: Grid = {
-    game.grid
-  }
-
-  def players : List[Player]= {
-    game.players
-  }
-
-  def initGame() = {
+  def initGame(playerNames: List[String]): Unit = {
     gameState = GameState.WAITING
     currentSets = Nil
     tilesMovedFromRackToGrid = Nil
@@ -58,8 +41,30 @@ class Controller(playerNames: List[String]) extends Publisher {
       p.points = 0
     })
 
+    game = Game(playerNames)
     publish(new GameStateChanged)
     publish(new PlayerSwitchedEvent)
+  }
+
+  def save(): String = {
+    fileIo.save(game)
+  }
+
+  def getGameState: GameState = {
+    gameState
+  }
+
+  def setGameState(g: GameState): Unit = {
+    gameState = g
+    publish(new GameStateChanged)
+  }
+
+  def field: Grid = {
+    game.grid
+  }
+
+  def players: List[Player] = {
+    game.players
   }
 
   def activePlayer: Player = {
@@ -72,7 +77,7 @@ class Controller(playerNames: List[String]) extends Publisher {
       return
     }
 
-    if (tilesMovedFromRackToGrid.size > 0){
+    if (tilesMovedFromRackToGrid.size > 0) {
       activePlayer.inFirstRound = false
     }
 
@@ -89,6 +94,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     tilesMovedFromRackToGrid = Nil
     publish(new PlayerSwitchedEvent)
   }
+
   def rackOfActivePlayer: Grid = getRack(activePlayer)
 
   def getRack(player: Player): Grid = {
@@ -110,6 +116,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   /**
     * Did player reached minimum score to get out?
     * All sets which the user builds or appends to do count.
+    *
     * @return true if player reached minimum score
     */
   def playerReachedMinLayOutPoints(): Boolean = {
