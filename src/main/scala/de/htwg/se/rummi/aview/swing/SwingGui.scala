@@ -3,7 +3,9 @@ package de.htwg.se.rummi.aview.swing
 import java.awt.Color
 
 import de.htwg.se.rummi.controller._
+import de.htwg.se.rummi.controller.controllerBaseImpl.{Controller, FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
 import de.htwg.se.rummi.model.{Ending, Player, RummiSet, Tile}
+import javax.swing.plaf.BorderUIResource.EmptyBorderUIResource
 
 import scala.swing._
 import scala.swing.event.ButtonClicked
@@ -20,18 +22,28 @@ class SwingGui(co: Controller) extends MainFrame {
   preferredSize = new Dimension(1100, 800)
   title = "Rummikub in Scala"
 
-  val finishButton = new Button("Finish")
+  val finishButton = new Button("Finish") {
+    enabled = false
+  }
   listenTo(finishButton)
   val getTileButton = new Button("Get Tile")
   listenTo(getTileButton)
-  val checkButton = new Button("Check")
-  listenTo(checkButton)
+  val undoButton = new Button("Undo")
+  listenTo(undoButton)
+  val redoButton = new Button("Redo")
+  listenTo(redoButton)
+  val sortButton = new Button("Sort")
+  listenTo(sortButton)
 
   val statusLabel = new Label(GameState.message(co.getGameState))
   val playerLabel = new Label("Current Player: " + co.activePlayer.name)
 
-  val field = new SwingGrid(8, 13)
-  val rack = new SwingGrid(4, 13)
+  val field = new SwingGrid(8, 13) {
+    border = Swing.EmptyBorder(0, 10, 10, 10)
+  }
+  val rack = new SwingGrid(4, 13) {
+    border = Swing.EmptyBorder(0, 10, 10, 10)
+  }
 
   val newGameMenuItem = new MenuItem("New Game")
   listenTo(newGameMenuItem)
@@ -46,25 +58,21 @@ class SwingGui(co: Controller) extends MainFrame {
   }
 
   val center = new BoxPanel(Orientation.Vertical) {
-
     contents += field
     contents += rack
     contents += new BoxPanel(Orientation.Horizontal) {
       contents += finishButton
-      contents += checkButton
       contents += getTileButton
+      contents += undoButton
+      contents += redoButton
+      contents += sortButton
     }
   }
 
-  val sortButton = new Button("Sort")
-  listenTo(sortButton)
-
   val south = new GridPanel(1, 3) {
+    border = Swing.EmptyBorder(10)
     contents += playerLabel
     contents += statusLabel
-    contents += new FlowPanel {
-      contents += sortButton
-    }
   }
 
   contents = new BorderPanel() {
@@ -74,6 +82,7 @@ class SwingGui(co: Controller) extends MainFrame {
 
   rack.fields.foreach(t => listenTo(t))
   field.fields.foreach(t => listenTo(t))
+
 
   var selectedField: Option[Field] = Option.empty
 
@@ -87,14 +96,16 @@ class SwingGui(co: Controller) extends MainFrame {
         co.draw()
       } else if (b == finishButton) {
         co.switchPlayer()
-      } else if (b == checkButton) {
-
       } else if (b == quitMenuItem) {
         sys.exit(0)
       } else if (b == newGameMenuItem) {
         co.initGame()
       } else if (b == sortButton) {
         co.sortRack()
+      } else if (b == undoButton) {
+        co.undo
+      } else if (b == redoButton) {
+        co.redo
       }
     }
 
@@ -113,6 +124,7 @@ class SwingGui(co: Controller) extends MainFrame {
 
     case event: PlayerSwitchedEvent => {
       playerLabel.text = "Current Player: " + co.activePlayer.name
+      finishButton.enabled = false
       rack.displayGrid(co.getRack(co.activePlayer))
     }
 
@@ -136,7 +148,8 @@ class SwingGui(co: Controller) extends MainFrame {
         case GameState.INVALID | GameState.TO_LESS => {
           finishButton.enabled = false
           getTileButton.enabled = false
-        }case GameState.VALID => {
+        }
+        case GameState.VALID => {
           finishButton.enabled = true
           getTileButton.enabled = false
         }
@@ -180,7 +193,9 @@ class SwingGui(co: Controller) extends MainFrame {
     }
   }
 
-  private def moveTile(clickedField: Field) = {
+  private def moveTile(clickedField: Field)
+
+  = {
     if (rack.containsField(selectedField.get) && field.containsField(clickedField)) {
       co.moveTile(co.rackOfActivePlayer, co.field, selectedField.get.tileOpt.get, clickedField.row, clickedField.col)
     }

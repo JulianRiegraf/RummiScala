@@ -1,6 +1,7 @@
 package de.htwg.se.rummi.controller
 
 import de.htwg.se.rummi.Const
+import de.htwg.se.rummi.controller.controllerBaseImpl.Controller
 import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
@@ -176,6 +177,22 @@ class ControllerSpec extends WordSpec with Matchers {
       listOfSets(0).tiles(0) should be(g8)
       listOfSets(0).tiles(1) should be(g9)
       listOfSets(0).tiles(2) should be(g10)
+
+    }
+
+    "within the rack " in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
+
+      var rack = controller.getRack(controller.activePlayer)
+
+      controller.moveTile(rack, rack, g11, 1, 2)
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1,2).get shouldBe g11
+
 
     }
   }

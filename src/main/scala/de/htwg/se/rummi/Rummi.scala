@@ -2,7 +2,7 @@ package de.htwg.se.rummi
 
 import de.htwg.se.rummi.aview.Tui
 import de.htwg.se.rummi.aview.swing.SwingGui
-import de.htwg.se.rummi.controller.Controller
+import de.htwg.se.rummi.controller.controllerBaseImpl.Controller
 
 import scala.io.StdIn
 
@@ -54,6 +54,7 @@ object Rummi {
     var input: String = ""
 
     do {
+      print("\nrummi>")
       input = StdIn.readLine()
       tui.processInputLine(input)
     } while (input != "q")

@@ -1,32 +1,34 @@
-package de.htwg.se.rummi.controller
+package de.htwg.se.rummi.controller.controllerBaseImpl
 
 import java.util.NoSuchElementException
 
 import de.htwg.se.rummi.Const
+import de.htwg.se.rummi.controller.GameState
 import de.htwg.se.rummi.controller.GameState.GameState
 import de.htwg.se.rummi.model.gridComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.gridComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
+import de.htwg.se.rummi.util.UndoManager
 
 import scala.swing.Publisher
 import scala.swing.event.Event
 
 class Controller(playerNames: List[String]) extends Publisher {
 
-
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
   var tilesMovedFromRackToGrid: List[Tile] = Nil
   val fileIoJson = new JsonFileIo()
   val fileIoXml = new XmlFileIo()
+  private val undoManager = new UndoManager
 
   val game = Game(playerNames)
 
-  def saveJson(): String ={
+  def saveJson(): String = {
     fileIoJson.save(game)
   }
 
-  def saveXml(): String ={
+  def saveXml(): String = {
     fileIoXml.save(game)
   }
 
@@ -34,7 +36,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     gameState
   }
 
-  def setGameState(g: GameState): Unit ={
+  def setGameState(g: GameState): Unit = {
     gameState = g
     publish(new GameStateChanged)
   }
@@ -43,7 +45,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     game.grid
   }
 
-  def players : List[Player]= {
+  def players: List[Player] = {
     game.players
   }
 
@@ -62,6 +64,18 @@ class Controller(playerNames: List[String]) extends Publisher {
     publish(new PlayerSwitchedEvent)
   }
 
+  def undo: Unit = {
+    undoManager.undoStep
+    publish(new FieldChangedEvent)
+
+  }
+
+  def redo: Unit = {
+    undoManager.redoStep
+    publish(new FieldChangedEvent)
+  }
+
+
   def activePlayer: Player = {
     players(game.activePlayerIndex)
   }
@@ -72,7 +86,7 @@ class Controller(playerNames: List[String]) extends Publisher {
       return
     }
 
-    if (tilesMovedFromRackToGrid.size > 0){
+    if (tilesMovedFromRackToGrid.size > 0) {
       activePlayer.inFirstRound = false
     }
 
@@ -89,6 +103,7 @@ class Controller(playerNames: List[String]) extends Publisher {
     tilesMovedFromRackToGrid = Nil
     publish(new PlayerSwitchedEvent)
   }
+
   def rackOfActivePlayer: Grid = getRack(activePlayer)
 
   def getRack(player: Player): Grid = {
@@ -110,6 +125,7 @@ class Controller(playerNames: List[String]) extends Publisher {
   /**
     * Did player reached minimum score to get out?
     * All sets which the user builds or appends to do count.
+    *
     * @return true if player reached minimum score
     */
   def playerReachedMinLayOutPoints(): Boolean = {
@@ -201,42 +217,55 @@ class Controller(playerNames: List[String]) extends Publisher {
         if (gridTo == gridFrom) {
           // tile is moved within the same grid
           val tiles = gridFrom.tiles - (x) + ((newRow, newCol) -> tile)
-          (Grid(gridFrom.ROWS, gridFrom.COLS, tiles),
-            Grid(gridTo.ROWS, gridTo.COLS, tiles))
+          (gridFrom.copy(tiles), gridTo.copy(tiles))
         } else {
-          (Grid(gridFrom.ROWS, gridFrom.COLS, gridFrom.tiles - (x)),
-            Grid(gridTo.ROWS, gridTo.COLS, gridTo.tiles + ((newRow, newCol) -> tile)))
+          (gridFrom.copy(gridFrom.tiles - (x)), gridTo.copy(gridTo.tiles + ((newRow, newCol) -> tile)))
         }
       }
       case None => throw new NoSuchElementException("Tile not found in rack.")
     }
   }
 
-  def moveTile(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int) = {
+  def moveTile(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int): Unit = {
+    undoManager.doStep(new MoveTileCommand(gridFrom, gridTo, tile, newRow, newCol, this))
+    publish(new FieldChangedEvent)
+  }
+
+  /**
+    * Move a tile.
+    *
+    * @param gridFrom The grid, which currently holds the tile
+    * @param gridTo   The grid, the tile should be moved to
+    * @param tile     The tile to move
+    * @param newRow   The row of the new position
+    * @param newCol   The col of the new position
+    * @return the updated Grids
+    */
+  def updateGrids(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int) = {
+
     val (f, t): (Grid, Grid) = moveTileImpl(gridFrom, gridTo, tile, newRow, newCol)
 
-    if ((gridFrom eq field) && (gridTo eq getRack(activePlayer))) {
+    if ((gridFrom == field) && (gridTo == getRack(activePlayer))) {
       setRack(t)
       setGrid(f)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid.filter(x => x != tile)
     }
 
-    if ((gridFrom eq field) && (gridTo eq field)) {
+    if ((gridFrom == field) && (gridTo == field)) {
       setGrid(f)
     }
 
-    if ((gridFrom eq getRack(activePlayer)) && (gridTo eq field)) {
+    if ((gridFrom == getRack(activePlayer)) && (gridTo == field)) {
       setRack(f)
       setGrid(t)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid :+ tile
     }
 
-    if ((gridFrom eq getRack(activePlayer)) && (gridTo eq getRack(activePlayer))) {
+    if ((gridFrom == getRack(activePlayer)) && (gridTo == getRack(activePlayer))) {
       setRack(t)
     }
-
-    publish(new FieldChangedEvent)
     setGameStateAfterMoveTile()
+    (f, t)
   }
 
   private def setGameStateAfterMoveTile() = {

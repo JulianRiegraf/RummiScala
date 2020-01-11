@@ -1,7 +1,9 @@
 package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.controller.{Controller, FieldChangedEvent, GameState, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
+import de.htwg.se.rummi.controller.GameState
+import de.htwg.se.rummi.controller.controllerBaseImpl.{Controller}
+import de.htwg.se.rummi.controller.controllerBaseImpl.{FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent}
 import de.htwg.se.rummi.model.Grid
 
 import scala.swing.Reactor
@@ -17,8 +19,8 @@ class Tui(co: Controller) extends Reactor {
       case "q" =>
       case "e" => //controller.createEmptyGrid
       case "n" => //controller.createNewGrid
-      case "z" => //controller.undo
-      case "y" => //controller.redo
+      case "z" => co.undo
+      case "y" => co.redo
       case "json" => print(co.saveJson)
       case "xml" => print(co.saveXml)
       case "sort" => co.sortRack()
