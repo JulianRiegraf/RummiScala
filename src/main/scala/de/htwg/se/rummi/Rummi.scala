@@ -54,6 +54,7 @@ object Rummi {
     var input: String = ""
 
     do {
+      print("\nrummi>")
       input = StdIn.readLine()
       tui.processInputLine(input)
     } while (input != "q")

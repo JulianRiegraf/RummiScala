@@ -66,10 +66,13 @@ class Controller(playerNames: List[String]) extends Publisher {
 
   def undo: Unit = {
     undoManager.undoStep
+    publish(new FieldChangedEvent)
+
   }
 
   def redo: Unit = {
     undoManager.redoStep
+    publish(new FieldChangedEvent)
   }
 
 
@@ -214,42 +217,55 @@ class Controller(playerNames: List[String]) extends Publisher {
         if (gridTo == gridFrom) {
           // tile is moved within the same grid
           val tiles = gridFrom.tiles - (x) + ((newRow, newCol) -> tile)
-          (Grid(gridFrom.ROWS, gridFrom.COLS, tiles),
-            Grid(gridTo.ROWS, gridTo.COLS, tiles))
+          (gridFrom.copy(tiles), gridTo.copy(tiles))
         } else {
-          (Grid(gridFrom.ROWS, gridFrom.COLS, gridFrom.tiles - (x)),
-            Grid(gridTo.ROWS, gridTo.COLS, gridTo.tiles + ((newRow, newCol) -> tile)))
+          (gridFrom.copy(gridFrom.tiles - (x)), gridTo.copy(gridTo.tiles + ((newRow, newCol) -> tile)))
         }
       }
       case None => throw new NoSuchElementException("Tile not found in rack.")
     }
   }
 
-  def moveTile(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int) = {
+  def moveTile(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int): Unit = {
+    undoManager.doStep(new MoveTileCommand(gridFrom, gridTo, tile, newRow, newCol, this))
+    publish(new FieldChangedEvent)
+  }
+
+  /**
+    * Move a tile.
+    *
+    * @param gridFrom The grid, which currently holds the tile
+    * @param gridTo   The grid, the tile should be moved to
+    * @param tile     The tile to move
+    * @param newRow   The row of the new position
+    * @param newCol   The col of the new position
+    * @return the updated Grids
+    */
+  def updateGrids(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int) = {
+
     val (f, t): (Grid, Grid) = moveTileImpl(gridFrom, gridTo, tile, newRow, newCol)
 
-    if ((gridFrom eq field) && (gridTo eq getRack(activePlayer))) {
+    if ((gridFrom == field) && (gridTo == getRack(activePlayer))) {
       setRack(t)
       setGrid(f)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid.filter(x => x != tile)
     }
 
-    if ((gridFrom eq field) && (gridTo eq field)) {
+    if ((gridFrom == field) && (gridTo == field)) {
       setGrid(f)
     }
 
-    if ((gridFrom eq getRack(activePlayer)) && (gridTo eq field)) {
+    if ((gridFrom == getRack(activePlayer)) && (gridTo == field)) {
       setRack(f)
       setGrid(t)
       tilesMovedFromRackToGrid = tilesMovedFromRackToGrid :+ tile
     }
 
-    if ((gridFrom eq getRack(activePlayer)) && (gridTo eq getRack(activePlayer))) {
+    if ((gridFrom == getRack(activePlayer)) && (gridTo == getRack(activePlayer))) {
       setRack(t)
     }
-
-    publish(new FieldChangedEvent)
     setGameStateAfterMoveTile()
+    (f, t)
   }
 
   private def setGameStateAfterMoveTile() = {

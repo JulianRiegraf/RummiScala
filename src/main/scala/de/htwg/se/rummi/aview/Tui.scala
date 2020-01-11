@@ -1,8 +1,9 @@
 package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.controller.controllerBaseImpl.{Controller, FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent}
-import de.htwg.se.rummi.controller.{FieldChangedEvent, GameState, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
+import de.htwg.se.rummi.controller.GameState
+import de.htwg.se.rummi.controller.controllerBaseImpl.{Controller}
+import de.htwg.se.rummi.controller.controllerBaseImpl.{FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent}
 import de.htwg.se.rummi.model.Grid
 
 import scala.swing.Reactor

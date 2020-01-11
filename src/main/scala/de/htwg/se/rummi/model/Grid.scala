@@ -30,6 +30,15 @@ case class Grid(ROWS: Int, COLS: Int, tiles: Map[(Int, Int), Tile]) {
 
   def size(): Int = tiles.size
 
+  /**
+    * Creates a new Grid with same size but with the specified tiles.
+    * @param tiles the tiles for the new Grid
+    * @return a new Grid with same size
+    */
+  def copy(tiles: Map[(Int, Int), Tile]): Grid ={
+    Grid(ROWS,COLS, tiles)
+  }
+
   def toXml = {
     <grid>
       <cols>{COLS}</cols>
