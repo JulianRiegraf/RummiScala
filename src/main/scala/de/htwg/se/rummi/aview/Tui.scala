@@ -2,13 +2,13 @@ package de.htwg.se.rummi.aview
 
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState
-import de.htwg.se.rummi.controller.controllerBaseImpl.{Controller}
+import de.htwg.se.rummi.controller.ControllerInterface
 import de.htwg.se.rummi.controller.controllerBaseImpl.{FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent}
 import de.htwg.se.rummi.model.Grid
 
 import scala.swing.Reactor
 
-class Tui(co: Controller) extends Reactor {
+class Tui(co: ControllerInterface) extends Reactor {
 
 
   listenTo(co)
@@ -22,9 +22,9 @@ class Tui(co: Controller) extends Reactor {
       case "z" => co.undo
       case "y" => co.redo
       case "s" => print(co.save)
-      case "sort" => co.sortRack()
-      case "finish" => co.switchPlayer()
-      case "draw" => co.draw()
+      case "sort" => co.sortRack
+      case "finish" => co.switchPlayer
+      case "draw" => co.draw
       case _ => input.split(" ").toList match {
         case from :: _ :: to :: Nil => co.moveTile(from, to)
         case _ => println("Can not parse input.")

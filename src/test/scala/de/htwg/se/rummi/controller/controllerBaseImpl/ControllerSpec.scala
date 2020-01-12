@@ -1,7 +1,7 @@
-package de.htwg.se.rummi.controller
+package de.htwg.se.rummi.controller.controllerBaseImpl
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.controller.controllerBaseImpl.Controller
+import de.htwg.se.rummi.controller.GameState
 import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
@@ -156,31 +156,18 @@ class ControllerSpec extends WordSpec with Matchers {
   }
 
   "Players can move Tiles " should {
-    "either from their rack to the grid " in {
-      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+    "either from their rack to the field " in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
-          ((1, 1) -> g11) +
-          ((1, 2) -> g12) +
-          ((1, 3) -> g13) +
-
-          ((3, 1) -> g8) +
-          ((3, 2) -> g9) +
-          ((3, 3) -> g10)
+          ((1, 1) -> g11)
       ))
 
-      val listOfSets = controller.extractSets(controller.field)
-      listOfSets.size should be(2)
-      listOfSets(1).tiles(0) should be(g11)
-      listOfSets(1).tiles(1) should be(g12)
-      listOfSets(1).tiles(2) should be(g13)
-
-      listOfSets(0).tiles(0) should be(g8)
-      listOfSets(0).tiles(1) should be(g9)
-      listOfSets(0).tiles(2) should be(g10)
-
+      val rack = controller.getRack(controller.activePlayer)
+      controller.moveTile(rack, controller.field, g11, 1, 2)
+      controller.field.getTileAt(1, 2).get shouldBe g11
     }
 
-    "within the rack " in {
+    "or within the rack " in {
       controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
           ((1, 1) -> g11)
@@ -192,8 +179,17 @@ class ControllerSpec extends WordSpec with Matchers {
 
       rack = controller.getRack(controller.activePlayer)
       rack.getTileAt(1, 2).get shouldBe g11
+    }
 
+    "by their variables" in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
 
+      val rack = controller.getRack(controller.activePlayer)
+      controller.moveTile("A9", "B2") // A9 = (1,1) in rack; B2 = (1,2) in field
+      controller.field.getTileAt(1, 2).get shouldBe g11
     }
   }
 }

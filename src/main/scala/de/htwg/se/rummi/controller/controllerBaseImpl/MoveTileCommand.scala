@@ -1,9 +1,10 @@
 package de.htwg.se.rummi.controller.controllerBaseImpl
 
+import de.htwg.se.rummi.controller.ControllerInterface
 import de.htwg.se.rummi.model.{Grid, Tile}
 import de.htwg.se.rummi.util.Command
 
-class MoveTileCommand(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int, controller: Controller) extends Command {
+class MoveTileCommand(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int, controller: ControllerInterface) extends Command {
 
   var position: (Int, Int) = _
   var newFromGrid: Grid = _
