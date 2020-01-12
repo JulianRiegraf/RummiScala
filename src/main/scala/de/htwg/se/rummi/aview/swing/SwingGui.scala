@@ -2,8 +2,8 @@ package de.htwg.se.rummi.aview.swing
 
 import java.awt.Color
 
-import de.htwg.se.rummi.controller._
-import de.htwg.se.rummi.controller.controllerBaseImpl._
+import de.htwg.se.rummi.controller.controllerBaseImpl.{FieldChangedEvent, GameStateChanged, PlayerSwitchedEvent, ValidStateChangedEvent, WinEvent}
+import de.htwg.se.rummi.controller.{ControllerInterface, GameState}
 
 import scala.swing._
 import scala.swing.event.ButtonClicked
@@ -13,7 +13,7 @@ import scala.swing.event.ButtonClicked
   *
   * @param co
   */
-class SwingGui(co: Controller) extends MainFrame {
+class SwingGui(co: ControllerInterface) extends MainFrame {
 
   listenTo(co)
 
@@ -91,15 +91,15 @@ class SwingGui(co: Controller) extends MainFrame {
         val clickedField: Field = b.asInstanceOf[Field]
         fieldClicked(clickedField)
       } else if (b == getTileButton) {
-        co.draw()
+        co.draw
       } else if (b == finishButton) {
-        co.switchPlayer()
+        co.switchPlayer
       } else if (b == quitMenuItem) {
         sys.exit(0)
       } else if (b == newGameMenuItem) {
-        co.initGame()
+        co.initGame
       } else if (b == sortButton) {
-        co.sortRack()
+        co.sortRack
       } else if (b == undoButton) {
         co.undo
       } else if (b == redoButton) {

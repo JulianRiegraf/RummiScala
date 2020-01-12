@@ -2,23 +2,18 @@ package de.htwg.se.rummi.controller.controllerBaseImpl
 
 import java.util.NoSuchElementException
 
-import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.controller.GameState
-import com.google.inject.name.Names
 import com.google.inject.{Guice, Inject}
 import de.htwg.se.rummi.controller.GameState.GameState
-import de.htwg.se.rummi.{Const, RummiModule}
+import de.htwg.se.rummi.controller.{ControllerInterface, GameState}
 import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
-import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
-import de.htwg.se.rummi.model.fileIoComponent.xmlFileIo.XmlFileIo
 import de.htwg.se.rummi.model.{RummiSet, _}
 import de.htwg.se.rummi.util.UndoManager
+import de.htwg.se.rummi.{Const, RummiModule}
 
-import scala.swing.Publisher
 import scala.swing.event.Event
 
 
-class Controller @Inject()() extends Publisher {
+class Controller @Inject()() extends ControllerInterface {
 
   var currentSets: List[RummiSet] = Nil
   private var gameState: GameState = GameState.WAITING
@@ -248,7 +243,7 @@ class Controller @Inject()() extends Publisher {
     * @param newCol   The col of the new position
     * @return the updated Grids
     */
-  def updateGrids(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int) = {
+  override def updateGrids(gridFrom: Grid, gridTo: Grid, tile: Tile, newRow: Int, newCol: Int): (Grid, Grid) = {
 
     val (f, t): (Grid, Grid) = moveTileImpl(gridFrom, gridTo, tile, newRow, newCol)
 

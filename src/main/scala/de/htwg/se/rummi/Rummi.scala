@@ -3,7 +3,7 @@ package de.htwg.se.rummi
 import com.google.inject.Guice
 import de.htwg.se.rummi.aview.Tui
 import de.htwg.se.rummi.aview.swing.SwingGui
-import de.htwg.se.rummi.controller.controllerBaseImpl.Controller
+import de.htwg.se.rummi.controller.ControllerInterface
 
 import scala.io.StdIn
 
@@ -39,7 +39,7 @@ object Rummi {
     }
 
     val injector = Guice.createInjector(new RummiModule)
-    val controller = injector.getInstance(classOf[Controller])
+    val controller = injector.getInstance(classOf[ControllerInterface])
 
     controller.initGame(playerNames)
 

@@ -1,7 +1,7 @@
-package de.htwg.se.rummi.controller
+package de.htwg.se.rummi.controller.controllerBaseImpl
 
 import de.htwg.se.rummi.Const
-import de.htwg.se.rummi.controller.controllerBaseImpl.Controller
+import de.htwg.se.rummi.controller.GameState
 import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
