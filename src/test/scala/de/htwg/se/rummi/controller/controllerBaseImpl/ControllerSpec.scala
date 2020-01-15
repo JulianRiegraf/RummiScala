@@ -192,4 +192,12 @@ class ControllerSpec extends WordSpec with Matchers {
       controller.field.getTileAt(1, 2).get shouldBe g11
     }
   }
+
+  "On save, controller " should {
+    "return the serialized game in json fromat" in {
+      controller.initGame("p1" :: "p2" :: Nil)
+      val json = controller.save()
+      json shouldNot(be(""))
+    }
+  }
 }
