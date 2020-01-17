@@ -45,6 +45,8 @@ class SwingGui(co: ControllerInterface) extends MainFrame {
 
   val newGameMenuItem = new MenuItem("New Game")
   listenTo(newGameMenuItem)
+  val saveMenuItem = new MenuItem("Save")
+  listenTo(saveMenuItem)
   val quitMenuItem = new MenuItem("Quit")
   listenTo(quitMenuItem)
 
@@ -52,6 +54,7 @@ class SwingGui(co: ControllerInterface) extends MainFrame {
     contents += new Menu("Menu") {
       contents += newGameMenuItem
       contents += quitMenuItem
+      contents += saveMenuItem
     }
   }
 
@@ -98,6 +101,8 @@ class SwingGui(co: ControllerInterface) extends MainFrame {
         sys.exit(0)
       } else if (b == newGameMenuItem) {
         co.initGame
+      } else if (b == saveMenuItem) {
+        co.save
       } else if (b == sortButton) {
         co.sortRack
       } else if (b == undoButton) {
