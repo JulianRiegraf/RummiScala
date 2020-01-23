@@ -127,6 +127,15 @@ class ControllerSpec extends WordSpec with Matchers {
       rack.tiles.values.toList.contains(tile) shouldBe true
     }
 
+    "throw exception if rack is full" in {
+      for(_ <- 0 to (2*13*4) - (2*14+1))
+        {
+          controller.draw()
+          controller.switchPlayer()
+        }
+      a[NoSuchElementException] should be thrownBy controller.draw()
+    }
+
     "can sort tiles by color and number" in {
       val g1 = Tile(1, GREEN)
       val g5 = Tile(5, GREEN)
