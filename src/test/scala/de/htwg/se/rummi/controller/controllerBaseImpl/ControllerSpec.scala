@@ -1,7 +1,11 @@
 package de.htwg.se.rummi.controller.controllerBaseImpl
 
+import java.util.NoSuchElementException
+
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState
+import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
+import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
@@ -27,7 +31,59 @@ class ControllerSpec extends WordSpec with Matchers {
     }
 
     "and should tell you who the first active Player is " in {
-      controller.activePlayer should be(Player(playerNames(0)))
+      controller.activePlayer should be(Player(playerNames.head))
+    }
+
+    "should init the game " in {
+      val init = controller.initGame()
+      init shouldBe()
+    }
+
+  }
+
+  "controller undo" should {
+    "undo the last tile movement" in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
+
+      var rack = controller.getRack(controller.activePlayer)
+
+      controller.moveTile(rack, rack, g11, 1, 2)
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 2).get shouldBe g11
+
+      controller.undo
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 1).get shouldBe g11
+    }
+  }
+
+  "controller redo" should {
+    "redo the last tile movement" in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
+
+      var rack = controller.getRack(controller.activePlayer)
+
+      controller.moveTile(rack, rack, g11, 1, 2)
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 2).get shouldBe g11
+
+      controller.undo
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 1).get shouldBe g11
+
+      controller.redo
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1,2).get shouldBe g11
     }
   }
 
@@ -81,6 +137,14 @@ class ControllerSpec extends WordSpec with Matchers {
     }
   }
 
+  "If no Move is made it should not be the next players turn " should {
+    "change player " in {
+      controller.tilesMovedFromRackToGrid = Nil
+      controller.switchPlayer()
+      controller.activePlayer should be(Player("julian"))
+    }
+  }
+
   "Before the switch the controller checks if the playingfield is valid: " should {
     val list = g11 :: g12 :: g13 :: Nil
     val list2 = g8 :: g9 :: g11 :: Nil
@@ -127,6 +191,11 @@ class ControllerSpec extends WordSpec with Matchers {
       rack.tiles.values.toList.contains(tile) shouldBe true
     }
 
+    "do nothing if already drawn " in {
+      controller.setGameState(GameState.DRAWN)
+      controller.draw() should be ()
+    }
+
     "can sort tiles by color and number" in {
       val g1 = Tile(1, GREEN)
       val g5 = Tile(5, GREEN)
@@ -152,6 +221,22 @@ class ControllerSpec extends WordSpec with Matchers {
         ((2, 2) -> g5) +
         ((3, 1) -> y1) +
         ((4, 1) -> b1)
+    }
+
+    "reset the player " in {
+      controller.switchPlayer()
+      controller.setGameState(GameState.DRAWN)
+      controller.tilesMovedFromRackToGrid = Nil
+      controller.game.activePlayerIndex should be(0)
+    }
+
+    "if a played moved tiles from Rack to grid " in {
+      val list = g11 :: g12 :: g13 :: Nil
+      controller.tilesMovedFromRackToGrid = list
+      controller.switchPlayer()
+      controller.setGameState(GameState.DRAWN)
+      controller.switchPlayer()
+      controller.activePlayer.inFirstRound should be(false)
     }
   }
 
@@ -199,5 +284,7 @@ class ControllerSpec extends WordSpec with Matchers {
       val json = controller.save()
       json shouldNot(be(""))
     }
+
   }
+
 }

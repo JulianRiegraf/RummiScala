@@ -6,6 +6,7 @@ import de.htwg.se.rummi.model.gridComponent.GridInterface
 import play.api.libs.json.{JsValue, Json}
 
 class JsonFileIo extends FileIoInterface {
+
   override def load: Game = ???
 
   override def save(game: Game): String = {
