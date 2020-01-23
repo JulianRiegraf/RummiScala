@@ -1,0 +1,888 @@
+{
+  "players" : [ {
+    "name" : "p1",
+    "inFirstRound" : true,
+    "points" : 0
+  }, {
+    "name" : "p2",
+    "inFirstRound" : true,
+    "points" : 0
+  } ],
+  "racks" : [ {
+    "player" : "p1",
+    "grid" : {
+      "COLS" : 13,
+      "ROWS" : 4,
+      "tiles" : [ {
+        "x" : 1,
+        "y" : 8,
+        "tile" : {
+          "number" : 4,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 5,
+        "tile" : {
+          "number" : 10,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 6,
+        "tile" : {
+          "number" : 10,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 11,
+        "tile" : {
+          "number" : 2,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 12,
+        "tile" : {
+          "number" : 5,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 1,
+        "tile" : {
+          "number" : 2,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 10,
+        "tile" : {
+          "number" : 2,
+          "colour" : {
+            "name" : "RED",
+            "ansiCode" : "\u001B[31m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 9,
+        "tile" : {
+          "number" : 3,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 4,
+        "tile" : {
+          "number" : 3,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 3,
+        "tile" : {
+          "number" : 8,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 13,
+        "tile" : {
+          "number" : 10,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 7,
+        "tile" : {
+          "number" : 9,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 2,
+        "tile" : {
+          "number" : 6,
+          "colour" : {
+            "name" : "RED",
+            "ansiCode" : "\u001B[31m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 2,
+        "y" : 1,
+        "tile" : {
+          "number" : 5,
+          "colour" : {
+            "name" : "RED",
+            "ansiCode" : "\u001B[31m"
+          },
+          "joker" : false
+        }
+      } ]
+    }
+  }, {
+    "player" : "p2",
+    "grid" : {
+      "COLS" : 13,
+      "ROWS" : 4,
+      "tiles" : [ {
+        "x" : 1,
+        "y" : 8,
+        "tile" : {
+          "number" : 1,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 5,
+        "tile" : {
+          "number" : 8,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 6,
+        "tile" : {
+          "number" : 11,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 11,
+        "tile" : {
+          "number" : 9,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 12,
+        "tile" : {
+          "number" : 3,
+          "colour" : {
+            "name" : "RED",
+            "ansiCode" : "\u001B[31m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 1,
+        "tile" : {
+          "number" : 13,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 10,
+        "tile" : {
+          "number" : 12,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 9,
+        "tile" : {
+          "number" : 9,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 4,
+        "tile" : {
+          "number" : 10,
+          "colour" : {
+            "name" : "RED",
+            "ansiCode" : "\u001B[31m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 3,
+        "tile" : {
+          "number" : 5,
+          "colour" : {
+            "name" : "BLUE",
+            "ansiCode" : "\u001B[34m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 13,
+        "tile" : {
+          "number" : 3,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 7,
+        "tile" : {
+          "number" : 7,
+          "colour" : {
+            "name" : "RED",
+            "ansiCode" : "\u001B[31m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 1,
+        "y" : 2,
+        "tile" : {
+          "number" : 11,
+          "colour" : {
+            "name" : "GREEN",
+            "ansiCode" : "\u001B[32m"
+          },
+          "joker" : false
+        }
+      }, {
+        "x" : 2,
+        "y" : 1,
+        "tile" : {
+          "number" : 12,
+          "colour" : {
+            "name" : "YELLOW",
+            "ansiCode" : "\u001B[33m"
+          },
+          "joker" : false
+        }
+      } ]
+    }
+  } ],
+  "field" : {
+    "COLS" : 13,
+    "ROWS" : 8,
+    "tiles" : [ ]
+  },
+  "activePlayerIndex" : 0,
+  "isValidField" : false,
+  "coveredTiles" : [ {
+    "number" : 2,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 8,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 10,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 8,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 3,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 9,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 5,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 8,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 2,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 3,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 11,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 2,
+    "colour" : {
+      "name" : "WHITE",
+      "ansiCode" : "\u001B[37m"
+    },
+    "joker" : true
+  }, {
+    "number" : 5,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 2,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 8,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 12,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 10,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 12,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 12,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "WHITE",
+      "ansiCode" : "\u001B[37m"
+    },
+    "joker" : true
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 9,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 9,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 10,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 11,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 12,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 8,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 2,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 10,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 11,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 11,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 1,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 8,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 3,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 9,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 9,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 3,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 5,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 5,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 5,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 2,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 12,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 6,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 12,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 4,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 11,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "RED",
+      "ansiCode" : "\u001B[31m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  }, {
+    "number" : 13,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "BLUE",
+      "ansiCode" : "\u001B[34m"
+    },
+    "joker" : false
+  }, {
+    "number" : 7,
+    "colour" : {
+      "name" : "GREEN",
+      "ansiCode" : "\u001B[32m"
+    },
+    "joker" : false
+  }, {
+    "number" : 11,
+    "colour" : {
+      "name" : "YELLOW",
+      "ansiCode" : "\u001B[33m"
+    },
+    "joker" : false
+  } ]
+}
