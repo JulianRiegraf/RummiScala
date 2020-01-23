@@ -211,7 +211,7 @@ class ControllerSpec extends WordSpec with Matchers {
       controller.switchPlayer()
       controller.setGameState(GameState.DRAWN)
       controller.tilesMovedFromRackToGrid = Nil
-      controller.game.activePlayerIndex should be(1)
+      controller.game.activePlayerIndex should be(0)
     }
 
     "if a played moved tiles from Rack to grid " in {
