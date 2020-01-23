@@ -211,12 +211,14 @@ class ControllerSpec extends WordSpec with Matchers {
       controller.switchPlayer()
       controller.setGameState(GameState.DRAWN)
       controller.tilesMovedFromRackToGrid = Nil
+      controller.switchPlayer()
       controller.game.activePlayerIndex should be(0)
     }
 
     "if a played moved tiles from Rack to grid " in {
       val list = g11 :: g12 :: g13 :: Nil
       controller.tilesMovedFromRackToGrid = list
+      controller.setGameState(GameState.DRAWN)
       controller.switchPlayer()
       controller.setGameState(GameState.DRAWN)
       controller.switchPlayer()
