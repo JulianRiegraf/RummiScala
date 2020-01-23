@@ -168,7 +168,8 @@ class ControllerSpec extends WordSpec with Matchers {
 
     "do nothing if already drawn " in {
       controller.setGameState(GameState.DRAWN)
-      controller.draw() should be ()
+      controller.draw() should be()
+    }
 
     "throw exception if rack is full" in {
       for(_ <- 0 to (2*13*4) - (2*14+1))
