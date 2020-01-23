@@ -1,7 +1,11 @@
 package de.htwg.se.rummi.controller.controllerBaseImpl
 
-import de.htwg.se.rummi.Const
+import com.google.inject.Guice
+import de.htwg.se.rummi.{Const, RummiModule}
 import de.htwg.se.rummi.controller.GameState
+import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
+import de.htwg.se.rummi.model.fileIoComponent.xmlFileIo.XmlFileIo
+import de.htwg.se.rummi.model.fileIoComponent.{FileIoInterface, xmlFileIo}
 import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
@@ -203,10 +207,19 @@ class ControllerSpec extends WordSpec with Matchers {
   }
 
   "On save, controller " should {
-    "return the serialized game in json fromat" in {
+    "return the serialized game in json format" in {
       controller.initGame("p1" :: "p2" :: Nil)
-      val json = controller.save()
+      val fileIo = new JsonFileIo();
+      val json = fileIo.save(controller.game)
       json shouldNot(be(""))
+    }
+
+    "return the serialized game in xml format" in {
+
+      controller.initGame("p1" :: "p2" :: Nil)
+      val fileIo = new XmlFileIo();
+      val xml = fileIo.save(controller.game)
+      xml shouldNot(be(""))
     }
   }
 

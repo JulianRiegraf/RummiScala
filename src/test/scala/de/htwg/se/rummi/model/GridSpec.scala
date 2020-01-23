@@ -26,10 +26,5 @@ class GridSpec extends WordSpec with Matchers {
     "return the number of tiles" in {
       Grid(5, 5, Map.empty + ((2, 3) -> Tile(1, BLUE))).size() shouldBe 1
     }
-
-    "return a xml representation" in {
-
-    }
-
   }
 }
