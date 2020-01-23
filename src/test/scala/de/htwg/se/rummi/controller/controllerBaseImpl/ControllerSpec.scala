@@ -1,11 +1,7 @@
 package de.htwg.se.rummi.controller.controllerBaseImpl
 
-import java.util.NoSuchElementException
-
 import de.htwg.se.rummi.Const
 import de.htwg.se.rummi.controller.GameState
-import de.htwg.se.rummi.model.fileIoComponent.FileIoInterface
-import de.htwg.se.rummi.model.fileIoComponent.jsonImpl.JsonFileIo
 import de.htwg.se.rummi.model.{Grid, Player, RummiSet, Tile, _}
 import org.scalatest.{Matchers, WordSpec}
 
