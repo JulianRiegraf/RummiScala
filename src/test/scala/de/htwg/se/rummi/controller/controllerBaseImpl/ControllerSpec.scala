@@ -105,6 +105,19 @@ class ControllerSpec extends WordSpec with Matchers {
       correctMove should be(false)
     }
 
+    "return false if there are wrong set" in {
+      controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11) +
+          ((1, 2) -> g8) +
+          ((1, 4) -> g13))
+      )
+
+      controller.moveTile("A3", "F5");
+      val correctMove = controller.game.isValidField
+      correctMove should be(false)
+    }
+
     "return true if multiple sets are correct " in {
       controller.setGrid(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
@@ -165,6 +178,24 @@ class ControllerSpec extends WordSpec with Matchers {
         ((2, 2) -> g5) +
         ((3, 1) -> y1) +
         ((4, 1) -> b1)
+    }
+
+    "can sort tiles by color with 5 colors" in {
+      val g1 = Tile(1, GREEN)
+      val g5 = Tile(5, WHITE)
+      val b1 = Tile(1, BLUE)
+      val y1 = Tile(1, YELLOW)
+      val r1 = Tile(1, RED)
+
+
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g1) +
+          ((1, 2) -> g5) +
+          ((1, 7) -> b1) +
+          ((5, 3) -> r1) +
+          ((1, 3) -> y1)
+      ))
     }
   }
 
