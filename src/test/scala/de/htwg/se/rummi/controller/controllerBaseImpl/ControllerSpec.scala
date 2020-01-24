@@ -194,6 +194,35 @@ class ControllerSpec extends WordSpec with Matchers {
       rack.getTileAt(1, 2).get shouldBe g11
     }
 
+    "from field to rack" in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
+      var rack = controller.getRack(controller.activePlayer)
+      controller.moveTile(rack, controller.field, g11, 1, 1)
+
+      controller.moveTile("A1", "A9")
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 1).get shouldBe g11
+    }
+
+    "within the field" in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
+      var rack = controller.getRack(controller.activePlayer)
+      controller.moveTile(rack, controller.field, g11, 1, 1)
+
+      controller.moveTile("A1", "C1")
+
+
+      val field = controller.field
+      field.getTileAt(1, 3).get shouldBe g11
+    }
+
     "by their variables" in {
       controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
         Map.empty +
@@ -241,6 +270,26 @@ class ControllerSpec extends WordSpec with Matchers {
 
       rack = controller.getRack(controller.activePlayer)
       rack.getTileAt(1, 1).get shouldBe g11
+    }
+
+    "redo the last tile movement" in {
+      controller.setRack(Grid(Const.GRID_ROWS, Const.GRID_COLS,
+        Map.empty +
+          ((1, 1) -> g11)
+      ))
+
+      var rack = controller.getRack(controller.activePlayer)
+
+      controller.moveTile(rack, rack, g11, 1, 2)
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 2).get shouldBe g11
+
+      controller.undo
+      controller.redo
+
+      rack = controller.getRack(controller.activePlayer)
+      rack.getTileAt(1, 2).get shouldBe g11
     }
   }
 }
