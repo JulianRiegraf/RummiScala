@@ -34,7 +34,6 @@ class ControllerSpec extends WordSpec with Matchers {
       val init = controller.initGame()
       init shouldBe()
     }
-
   }
 
   "controller redo" should {

@@ -4,7 +4,6 @@ scala:
 notifications:
   email:
     recipients:
-      - julianriegraf@web.de
       - pa.toth87@gmail.com
 jdk:
   - openjdk8
